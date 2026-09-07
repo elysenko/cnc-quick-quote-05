@@ -29,6 +29,12 @@
 
   @if (loading()) {
     <div class="card card-pad loading"><span class="spinner"></span> Loading quotes…</div>
+  } @else if (error()) {
+    <div class="card card-pad state" data-testid="quotes-error">
+      <span class="state-icon" aria-hidden="true">⚠</span>
+      <h3>Something went wrong</h3>
+      <p class="muted">{{ error() }}</p>
+    </div>
   } @else if (visible().length === 0) {
     <div class="card card-pad state" data-testid="quotes-empty">
       <span class="state-icon" aria-hidden="true">⬡</span>

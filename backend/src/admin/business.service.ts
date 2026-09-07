@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { BusinessConfig } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DomainConfigService } from '../config/domain-config.service';
@@ -48,9 +48,8 @@ export class BusinessService {
 
   /**
    * Saves business settings. When a new Stripe secret key is supplied it is
-   * probed against the live API first, so a bad key is reported at save time
-   * rather than at a customer's checkout — but a failed probe does not block
-   * the rest of the settings from saving.
+   * probed against the live API first, so a bad key is reported — and the
+   * entire save rejected — at save time rather than at a customer's checkout.
    */
   async update(dto: UpdateBusinessDto): Promise<BusinessSaveResult> {
     await this.config.business();
@@ -58,6 +57,11 @@ export class BusinessService {
     let probe: { ok: boolean; message: string } | null = null;
     if (dto.stripeSecretKey) {
       probe = await this.stripe.probeCredentials(dto.stripeSecretKey);
+      if (!probe.ok) {
+        throw new BadRequestException(
+          `Stripe rejected the secret key: ${probe.message}`,
+        );
+      }
     }
 
     const row = await this.prisma.businessConfig.update({

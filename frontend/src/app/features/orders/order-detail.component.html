@@ -8,7 +8,7 @@
       </div>
       <div class="row">
         <a [routerLink]="['/orders', order.id, 'confirmation']" class="btn btn-secondary">Confirmation</a>
-        <a href="#" (click)="$event.preventDefault()" class="btn btn-primary" data-testid="order-receipt">
+        <a [href]="receiptHref()" class="btn btn-primary" data-testid="order-receipt">
           Download receipt
         </a>
       </div>
@@ -76,6 +76,15 @@
           </p>
         </div>
       </aside>
+    </div>
+  } @else if (loading()) {
+    <div class="card card-pad loading"><span class="spinner"></span> Loading order…</div>
+  } @else if (error()) {
+    <div class="card card-pad state" data-testid="order-detail-error">
+      <span class="state-icon" aria-hidden="true">⚠</span>
+      <h3>Something went wrong</h3>
+      <p class="muted">{{ error() }}</p>
+      <a routerLink="/orders" class="btn btn-secondary mt-4">Back to orders</a>
     </div>
   }
 </section>

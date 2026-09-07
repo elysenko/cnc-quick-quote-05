@@ -4,13 +4,14 @@
       <h2 class="mb-0">Payments</h2>
       <p class="xsmall muted mb-0">Stripe Checkout keys. Secrets are stored encrypted and only ever shown masked.</p>
     </div>
-    <span [class]="sandbox ? 'badge badge-warn' : 'badge badge-ok'">
-      {{ sandbox ? 'Test mode' : 'Live mode' }}
+    <span [class]="sandbox() ? 'badge badge-warn' : 'badge badge-ok'">
+      {{ sandbox() ? 'Test mode' : 'Live mode' }}
     </span>
   </div>
 
   <div class="card-body">
-    @if (sandbox) {
+    @if (error()) { <div class="alert alert-danger mb-4">{{ error() }}</div> }
+    @if (sandbox()) {
       <div class="alert alert-warn mb-4" data-testid="payments-sandbox-notice">
         <p>
           Test mode is on. Cards are not charged — use Stripe’s test numbers. Switch to live mode once your
@@ -20,7 +21,7 @@
     }
 
     <label class="switch mb-4">
-      <input type="checkbox" [(ngModel)]="sandbox" name="sandbox" (ngModelChange)="touch()"
+      <input type="checkbox" [ngModel]="sandbox()" name="sandbox" (ngModelChange)="setSandbox($event)"
              data-testid="payments-sandbox-toggle" />
       Use Stripe test (sandbox) keys
     </label>
@@ -28,20 +29,23 @@
     <div class="admin-form">
       <div class="field full">
         <label for="s-pk">Publishable key</label>
-        <input id="s-pk" type="text" class="mono" [(ngModel)]="publishableKey" name="pk" (ngModelChange)="touch()"
-               placeholder="pk_test_…" data-testid="payments-publishable-key" />
+        <input id="s-pk" type="text" class="mono" [ngModel]="publishableKey()" name="pk"
+               (ngModelChange)="setPublishableKey($event)" placeholder="pk_test_…"
+               data-testid="payments-publishable-key" />
       </div>
       <div class="field full">
         <label for="s-sk">Secret key</label>
-        <input id="s-sk" type="password" class="mono" [(ngModel)]="secretKey" name="sk" (ngModelChange)="touch()"
-               [placeholder]="storedSecret" data-testid="payments-secret-key" />
-        <p class="hint">Currently stored: <span class="mono">{{ storedSecret }}</span>. Leave blank to keep it.</p>
+        <input id="s-sk" type="password" class="mono" [ngModel]="secretKey()" name="sk"
+               (ngModelChange)="setSecretKey($event)" [placeholder]="storedSecret()"
+               data-testid="payments-secret-key" />
+        <p class="hint">Currently stored: <span class="mono">{{ storedSecret() }}</span>. Leave blank to keep it.</p>
       </div>
       <div class="field full">
         <label for="s-wh">Webhook signing secret</label>
-        <input id="s-wh" type="password" class="mono" [(ngModel)]="webhookSecret" name="wh" (ngModelChange)="touch()"
-               [placeholder]="storedWebhook" data-testid="payments-webhook-secret" />
-        <p class="hint">Currently stored: <span class="mono">{{ storedWebhook }}</span>.</p>
+        <input id="s-wh" type="password" class="mono" [ngModel]="webhookSecret()" name="wh"
+               (ngModelChange)="setWebhookSecret($event)" [placeholder]="storedWebhook()"
+               data-testid="payments-webhook-secret" />
+        <p class="hint">Currently stored: <span class="mono">{{ storedWebhook() }}</span>.</p>
       </div>
     </div>
 
@@ -64,12 +68,12 @@
       }
       @case ('valid') {
         <div class="alert alert-ok mt-4" data-testid="payments-probe-ok">
-          <p>Keys verified with Stripe and saved.</p>
+          <p>{{ probeMessage() || 'Keys verified with Stripe and saved.' }}</p>
         </div>
       }
       @case ('invalid') {
         <div class="alert alert-danger mt-4" data-testid="payments-probe-fail">
-          <p>Stripe rejected those keys. Nothing was saved — check them and try again.</p>
+          <p>{{ probeMessage() || 'Stripe rejected those keys. Nothing was saved — check them and try again.' }}</p>
         </div>
       }
     }

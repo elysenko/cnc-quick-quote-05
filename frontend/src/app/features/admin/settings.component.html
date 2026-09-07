@@ -1,15 +1,20 @@
 <div class="stack" data-testid="admin-settings">
-  @if (unconfigured().length > 0) {
-    <div class="alert alert-warn" role="status" data-testid="settings-banner">
-      <div>
-        <p class="strong mb-0">Some services aren’t connected yet</p>
-        <p class="small mb-0">{{ bannerText() }}</p>
+  @if (error()) {
+    <div class="alert alert-danger" role="status">{{ error() }}</div>
+  }
+  @if (!loading()) {
+    @if (unconfigured().length > 0) {
+      <div class="alert alert-warn" role="status" data-testid="settings-banner">
+        <div>
+          <p class="strong mb-0">Some services aren’t connected yet</p>
+          <p class="small mb-0">{{ bannerText() }}</p>
+        </div>
       </div>
-    </div>
-  } @else {
-    <div class="alert alert-ok" role="status" data-testid="settings-all-configured">
-      <p>All services and integrations are configured.</p>
-    </div>
+    } @else {
+      <div class="alert alert-ok" role="status" data-testid="settings-all-configured">
+        <p>All services and integrations are configured.</p>
+      </div>
+    }
   }
 
   <div class="card">
@@ -65,7 +70,8 @@
                    [placeholder]="entry.maskedValue || 'Paste credential'"
                    [attr.aria-label]="entry.label + ' credential'"
                    [attr.data-testid]="'setting-input-' + entry.key" />
-            <button type="button" class="btn btn-primary" [disabled]="!value(entry.key).trim()"
+            <button type="button" class="btn btn-primary"
+                    [disabled]="!value(entry.key).trim() || savingKey() === entry.key"
                     (click)="save(entry)" [attr.data-testid]="'setting-save-' + entry.key">Save</button>
           </div>
 

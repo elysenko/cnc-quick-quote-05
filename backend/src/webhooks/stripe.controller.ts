@@ -11,6 +11,7 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import Stripe from 'stripe';
 import type { Request } from 'express';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../integrations/stripe-sdk';
 import { OrdersService } from '../orders/orders.service';
@@ -76,7 +77,17 @@ export class StripeWebhookController {
     if (alreadySeen) {
       return { received: true };
     }
-    await this.prisma.stripeEvent.create({ data: { eventId: event.id, type: event.type } });
+    try {
+      await this.prisma.stripeEvent.create({ data: { eventId: event.id, type: event.type } });
+    } catch (error) {
+      // Concurrent redelivery raced us to the insert — the unique violation
+      // means another request is already (or already has) processed this
+      // event, so this one is a no-op rather than a failure.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return { received: true };
+      }
+      throw error;
+    }
 
     if (event.type === 'checkout.session.completed') {
       await this.handleSessionCompleted(event.data.object as Stripe.Checkout.Session);

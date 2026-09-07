@@ -94,6 +94,9 @@
             Offer this material to customers
           </label>
         </div>
+        @if (saveError()) {
+          <p class="field-error full">{{ saveError() }}</p>
+        }
       </div>
       <div class="modal-foot">
         <a routerLink="/admin/materials" class="btn btn-secondary">Cancel</a>

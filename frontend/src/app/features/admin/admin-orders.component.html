@@ -19,7 +19,18 @@
   </div>
 
   <div class="card">
-    @if (visible().length === 0) {
+    @if (loading()) {
+      <div class="state">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="muted mb-0">Loading orders…</p>
+      </div>
+    } @else if (error()) {
+      <div class="state">
+        <span class="state-icon" aria-hidden="true">⚠</span>
+        <h3>Something went wrong</h3>
+        <p class="muted mb-0">{{ error() }}</p>
+      </div>
+    } @else if (visible().length === 0) {
       <div class="state" data-testid="admin-orders-empty">
         <span class="state-icon" aria-hidden="true">▤</span>
         <h3>No orders with that status</h3>

@@ -1,6 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { AdminApi } from '../../core/api/admin.service';
+import { toAppError } from '../../core/errors';
 import { Material } from '../../core/models';
 
 @Component({
@@ -11,18 +14,17 @@ import { Material } from '../../core/models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MaterialsComponent {
+  private readonly api = inject(AdminApi);
+
   /** `?modal=material-edit&id=…` — modal state lives in the URL so it is deep-linkable. */
   readonly modal = input<string | undefined>();
   readonly id = input<string | undefined>();
 
-  readonly materials = signal<Material[]>([
-    { id: 'mat_ms16', name: 'Mild Steel', thicknessMm: 1.6, sheetWMm: 2500, sheetHMm: 1250, costMultiplier: 1.0, isActive: true },
-    { id: 'mat_ms30', name: 'Mild Steel', thicknessMm: 3.0, sheetWMm: 2500, sheetHMm: 1250, costMultiplier: 1.45, isActive: true },
-    { id: 'mat_ss20', name: 'Stainless 304', thicknessMm: 2.0, sheetWMm: 2000, sheetHMm: 1000, costMultiplier: 2.35, isActive: true },
-    { id: 'mat_al30', name: 'Aluminium 5052', thicknessMm: 3.0, sheetWMm: 2500, sheetHMm: 1250, costMultiplier: 1.85, isActive: true },
-    { id: 'mat_bz15', name: 'Brass C260', thicknessMm: 1.5, sheetWMm: 1200, sheetHMm: 600, costMultiplier: 3.1, isActive: true },
-    { id: 'mat_cu20', name: 'Copper C110', thicknessMm: 2.0, sheetWMm: 1200, sheetHMm: 600, costMultiplier: 4.2, isActive: false },
-  ]);
+  readonly materials = signal<Material[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly saving = signal(false);
+  readonly saveError = signal<string | null>(null);
 
   readonly modalOpen = computed(() => this.modal() === 'material-edit');
   readonly editing = computed(() => this.materials().find((m) => m.id === this.id()) ?? null);
@@ -35,31 +37,68 @@ export class MaterialsComponent {
   }
 
   constructor() {
-    // Keep the form in step with whichever material the URL points at.
-    queueMicrotask(() => this.syncDraft());
+    void this.load();
+    // Keep the form in step with whichever material the URL points at, including
+    // once the real list has finished loading (deep link to an edit modal).
+    effect(() => {
+      this.modal();
+      this.id();
+      this.materials();
+      this.syncDraft();
+    });
+  }
+
+  private async load(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      this.materials.set(await firstValueFrom(this.api.materials()));
+    } catch (err) {
+      this.error.set(toAppError(err).message);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   syncDraft(): void {
     this.draft.set(this.editing() ? { ...this.editing()! } : this.blank());
+    this.saveError.set(null);
   }
 
   patch<K extends keyof Material>(key: K, value: Material[K]): void {
     this.draft.update((d) => ({ ...d, [key]: value }));
   }
 
-  save(): void {
+  async save(): Promise<void> {
     const d = this.draft();
-    if (d.id) {
-      this.materials.update((list) => list.map((m) => (m.id === d.id ? { ...d } : m)));
-    } else {
-      this.materials.update((list) => [...list, { ...d, id: `mat_new${list.length}` }]);
+    this.saving.set(true);
+    this.saveError.set(null);
+    try {
+      if (d.id) {
+        const { id, ...patch } = d;
+        const updated = await firstValueFrom(this.api.updateMaterial(id, patch));
+        this.materials.update((list) => list.map((m) => (m.id === updated.id ? updated : m)));
+      } else {
+        const { id, ...input } = d;
+        const created = await firstValueFrom(this.api.createMaterial(input));
+        this.materials.update((list) => [...list, created]);
+      }
+    } catch (err) {
+      this.saveError.set(toAppError(err).message);
+    } finally {
+      this.saving.set(false);
     }
   }
 
   /** Never hard-deleted — quote history must stay intact. */
-  toggleActive(material: Material): void {
-    this.materials.update((list) =>
-      list.map((m) => (m.id === material.id ? { ...m, isActive: !m.isActive } : m)),
-    );
+  async toggleActive(material: Material): Promise<void> {
+    try {
+      const updated = await firstValueFrom(
+        this.api.updateMaterial(material.id, { isActive: !material.isActive }),
+      );
+      this.materials.update((list) => list.map((m) => (m.id === updated.id ? updated : m)));
+    } catch (err) {
+      this.error.set(toAppError(err).message);
+    }
   }
 }

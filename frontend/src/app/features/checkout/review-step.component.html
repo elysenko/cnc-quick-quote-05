@@ -11,21 +11,26 @@
   <div class="card">
     <div class="card-head"><h2>Review your order</h2></div>
     <div class="card-body">
-      <dl class="kv" data-testid="review-summary">
-        <dt>Drawing</dt><dd class="ellipsis">{{ drawing()?.filename }}</dd>
-        <dt>Material</dt><dd>{{ material().name }} {{ material().thicknessMm }} mm</dd>
-        <dt>Quantity</dt><dd>{{ draft.quantity() }} parts</dd>
-        <dt>Bends per part</dt><dd>{{ draft.bends().length }}</dd>
-        <dt>Sheets</dt><dd>{{ nesting()?.sheetCount }}</dd>
-      </dl>
+      @if (summary(); as s) {
+        <dl class="kv" data-testid="review-summary">
+          <dt>Reference</dt><dd class="ellipsis">{{ s.reference }}</dd>
+          <dt>Material</dt><dd>{{ s.materialName }}</dd>
+          <dt>Quantity</dt><dd>{{ s.quantity }} parts</dd>
+          <dt>Sheets</dt><dd>{{ s.sheetCount }}</dd>
+        </dl>
 
-      <hr />
+        <hr />
 
-      <div class="line-total">
-        <span>Parts total</span>
-        <span class="mono strong" data-testid="review-total">{{ money(breakdown()?.totalCents ?? 0) }}</span>
-      </div>
-      <p class="xsmall muted mb-0">Shipping is added on the next step.</p>
+        <div class="line-total">
+          <span>Parts total</span>
+          <span class="mono strong" data-testid="review-total">{{ money(s.partsCents) }}</span>
+        </div>
+        <p class="xsmall muted mb-0">Shipping is added on the next step.</p>
+      } @else if (error()) {
+        <p class="alert alert-danger" role="alert">{{ error() }}</p>
+      } @else if (loading()) {
+        <p class="muted">Loading your quote…</p>
+      }
     </div>
     <div class="card-foot step-actions">
       <a [routerLink]="['/quotes', quoteId()]" class="btn btn-secondary">← Back to quote</a>

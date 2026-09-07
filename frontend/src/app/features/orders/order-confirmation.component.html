@@ -76,9 +76,14 @@
         </a>
       </div>
     </div>
-
-    <button type="button" class="btn btn-ghost btn-sm preview-toggle" (click)="toggleEmailState()">
-      {{ emailFailed() ? 'Preview: receipt email sent' : 'Preview: receipt email failed' }}
-    </button>
+  } @else if (loading()) {
+    <div class="card card-pad loading"><span class="spinner"></span> Loading order…</div>
+  } @else if (error()) {
+    <div class="card card-pad state" data-testid="order-confirmation-error">
+      <span class="state-icon" aria-hidden="true">⚠</span>
+      <h3>Something went wrong</h3>
+      <p class="muted">{{ error() }}</p>
+      <a routerLink="/orders" class="btn btn-secondary mt-4">Back to orders</a>
+    </div>
   }
 </section>

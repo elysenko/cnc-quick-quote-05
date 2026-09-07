@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { BrandingService } from '../../core/branding.service';
+import { OrdersApi } from '../../core/api/orders.service';
 import { Order, money } from '../../core/models';
 
 @Component({
@@ -12,19 +14,37 @@ import { Order, money } from '../../core/models';
 })
 export class OrderConfirmationComponent {
   readonly branding = inject(BrandingService);
+  private readonly ordersApi = inject(OrdersApi);
+
   readonly id = input<string>('');
   readonly money = money;
 
-  readonly orders = signal<Order[]>([
-    { id: 'ord_9f21', orderNumber: 'NGL-2026-004182', confirmationNumber: 'CNF-8H2K-4QT9', quoteId: 'qte_2418', customerEmail: 'demo.customer@example.com', materialName: 'Mild Steel 1.6 mm', quantity: 24, shippingMethodName: 'Standard freight', shippingCostCents: 2450, shippingAddress: { name: 'Dana Reyes', line1: '17 Harbour Works', line2: 'Unit 4', city: 'Milwaukee', region: 'WI', postcode: '53202', country: 'United States' }, subtotalCents: 41255, totalCents: 43705, status: 'paid', estimatedDelivery: '12 September 2026', emailSentAt: '2026-09-05T14:31:00.000Z', createdAt: '2026-09-05T14:30:00.000Z' },
-  ]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly order = signal<Order | null>(null);
 
-  readonly order = computed(() => this.orders().find((o) => o.id === this.id()) ?? this.orders()[0]);
+  /** The receipt email failed (or hasn't gone out) when the order carries no send timestamp. */
+  readonly emailFailed = computed(() => !this.order()?.emailSentAt);
 
-  /** Preview toggle: the success view must read correctly even when the email failed. */
-  readonly emailFailed = signal(false);
+  constructor() {
+    effect(() => {
+      const id = this.id();
+      if (!id) return;
+      void this.load(id);
+    });
+  }
 
-  toggleEmailState(): void {
-    this.emailFailed.update((v) => !v);
+  private async load(id: string): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const order = await firstValueFrom(this.ordersApi.get(id));
+      this.order.set(order);
+    } catch {
+      this.order.set(null);
+      this.error.set('We could not load this order. Refresh to try again.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

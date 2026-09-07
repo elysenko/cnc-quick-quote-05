@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DraftStore } from '../../core/draft-store';
+import { CheckoutStore } from './checkout.store';
 import { money } from '../../core/models';
 
 @Component({
@@ -10,8 +10,8 @@ import { money } from '../../core/models';
   styleUrl: './checkout-steps.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReviewStepComponent {
-  readonly draft = inject(DraftStore);
+export class ReviewStepComponent implements OnInit {
+  readonly checkout = inject(CheckoutStore);
 
   readonly quoteId = input<string>('');
   /** `?status=cancelled` — Stripe returned the customer without charging. */
@@ -19,8 +19,12 @@ export class ReviewStepComponent {
 
   readonly money = money;
   readonly cancelled = computed(() => this.status() === 'cancelled');
-  readonly drawing = this.draft.drawing;
-  readonly material = this.draft.material;
-  readonly breakdown = this.draft.breakdown;
-  readonly nesting = this.draft.nesting;
+
+  readonly summary = this.checkout.summary;
+  readonly loading = this.checkout.summaryLoading;
+  readonly error = this.checkout.summaryError;
+
+  ngOnInit(): void {
+    void this.checkout.loadSummary(this.quoteId());
+  }
 }

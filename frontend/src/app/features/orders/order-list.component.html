@@ -2,12 +2,20 @@
   <div class="page-head">
     <div>
       <h1>My orders</h1>
-      <p class="sub">{{ orders().length }} order{{ orders().length === 1 ? '' : 's' }}</p>
+      <p class="sub">{{ total() }} order{{ total() === 1 ? '' : 's' }}</p>
     </div>
     <a routerLink="/quotes/new/upload" class="btn btn-secondary">+ New quote</a>
   </div>
 
-  @if (visible().length === 0) {
+  @if (loading()) {
+    <div class="card card-pad loading"><span class="spinner"></span> Loading orders…</div>
+  } @else if (error()) {
+    <div class="card card-pad state" data-testid="orders-error">
+      <span class="state-icon" aria-hidden="true">⚠</span>
+      <h3>Something went wrong</h3>
+      <p class="muted">{{ error() }}</p>
+    </div>
+  } @else if (visible().length === 0) {
     <div class="card card-pad state" data-testid="orders-empty">
       <span class="state-icon" aria-hidden="true">▤</span>
       <h3>No orders yet</h3>

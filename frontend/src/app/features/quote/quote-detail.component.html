@@ -1,83 +1,92 @@
 <section class="page" data-testid="quote-detail">
-  <div class="page-head">
-    <div>
-      <a routerLink="/quotes" class="small back-link">← All quotes</a>
-      <h1 class="mt-2">{{ drawing()?.filename }}</h1>
-      <p class="sub mono">Reference {{ reference() }} · saved 5 Sep 2026</p>
-    </div>
-    <div class="row">
-      <a [routerLink]="['/quotes', id()]" [queryParams]="{ panel: breakdownOpen() ? null : 'breakdown' }"
-         class="btn btn-secondary" data-testid="toggle-breakdown">
-        {{ breakdownOpen() ? 'Hide breakdown' : 'Show breakdown' }}
-      </a>
-      <a [routerLink]="['/checkout', id(), 'review']" class="btn btn-primary" data-testid="quote-checkout">
-        Checkout →
-      </a>
-    </div>
-  </div>
-
-  <div class="alert alert-info mb-4" data-testid="snapshot-notice">
-    <p>
-      This quote is locked to the price list in force when it was created. Later changes to materials or
-      pricing never alter it.
-    </p>
-  </div>
-
-  <div class="split">
-    <div class="stack">
-      <div class="card card-pad">
-        <div class="totals">
-          <div>
-            <p class="xsmall muted mb-0">Total</p>
-            <p class="total-amount mono mb-0">{{ money(breakdown()?.totalCents ?? 0) }}</p>
-          </div>
-          <span class="badge badge-info">Draft</span>
-        </div>
-        <hr />
-        <dl class="kv">
-          <dt>Material</dt><dd>{{ material().name }} {{ material().thicknessMm }} mm</dd>
-          <dt>Quantity</dt><dd>{{ draft.quantity() }}</dd>
-          <dt>Bends per part</dt><dd>{{ draft.bends().length }}</dd>
-          <dt>Cut length (total)</dt>
-          <dd>{{ (((drawing()?.cutLengthMm ?? 0) * draft.quantity()) / 304.8).toFixed(1) }} ft</dd>
-          <dt>Sheets</dt><dd>{{ nesting()?.sheetCount }}</dd>
-          <dt>Utilisation</dt><dd>{{ ((nesting()?.utilization ?? 0) * 100).toFixed(1) }}%</dd>
-        </dl>
+  @if (quote(); as quote) {
+    <div class="page-head">
+      <div>
+        <a routerLink="/quotes" class="small back-link">← All quotes</a>
+        <h1 class="mt-2">{{ drawing()?.filename }}</h1>
+        <p class="sub mono">Reference {{ reference() }} · saved {{ quote.createdAt | date: 'd MMM y' }}</p>
       </div>
-
-      @if (breakdownOpen() && breakdown(); as bd) {
-        <div class="card card-pad" data-testid="breakdown-panel">
-          <app-price-breakdown [breakdown]="bd" heading="Stored price snapshot" />
-        </div>
-      }
-    </div>
-
-    <aside class="stack">
-      <div class="card">
-        <div class="card-head"><h3>Nesting preview</h3></div>
-        <div class="card-body">
-          @if (drawing(); as dwg) {
-            <app-work-bed-canvas
-              [polylines]="dwg.polylines"
-              [bends]="draft.bends()"
-              [partW]="dwg.bboxWMm"
-              [partH]="dwg.bboxHMm"
-              [sheetW]="material().sheetWMm"
-              [sheetH]="material().sheetHMm"
-              [nesting]="nesting()"
-              [speed]="draft.machine().animationSpeed"
-            />
-          }
-        </div>
-      </div>
-
-      <div class="card card-pad">
-        <h3>Re-order</h3>
-        <p class="small muted">Need the same part again at today’s prices? Start a fresh quote from this drawing.</p>
-        <a routerLink="/quotes/new/material" class="btn btn-secondary btn-block" data-testid="quote-reorder">
-          Re-quote this drawing
+      <div class="row">
+        <a [routerLink]="['/quotes', id()]" [queryParams]="{ panel: breakdownOpen() ? null : 'breakdown' }"
+           class="btn btn-secondary" data-testid="toggle-breakdown">
+          {{ breakdownOpen() ? 'Hide breakdown' : 'Show breakdown' }}
+        </a>
+        <a [routerLink]="['/checkout', id(), 'review']" class="btn btn-primary" data-testid="quote-checkout">
+          Checkout →
         </a>
       </div>
-    </aside>
-  </div>
+    </div>
+
+    <div class="alert alert-info mb-4" data-testid="snapshot-notice">
+      <p>
+        This quote is locked to the price list in force when it was created. Later changes to materials or
+        pricing never alter it.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="stack">
+        <div class="card card-pad">
+          <div class="totals">
+            <div>
+              <p class="xsmall muted mb-0">Total</p>
+              <p class="total-amount mono mb-0">{{ money(breakdown()?.totalCents ?? quote.totalCents) }}</p>
+            </div>
+            <span [class]="badgeClass(quote.status)">{{ quote.status }}</span>
+          </div>
+          <hr />
+          <dl class="kv">
+            <dt>Material</dt><dd>{{ material()?.name }} {{ material()?.thicknessMm }} mm</dd>
+            <dt>Quantity</dt><dd>{{ quote.quantity }}</dd>
+            <dt>Bends per part</dt><dd>{{ quote.bendCount }}</dd>
+            <dt>Cut length (total)</dt>
+            <dd>{{ (quote.cutLengthMm / 304.8).toFixed(1) }} ft</dd>
+            <dt>Sheets</dt><dd>{{ nesting()?.sheetCount ?? quote.sheetCount }}</dd>
+            <dt>Utilisation</dt><dd>{{ ((nesting()?.utilization ?? quote.utilization) * 100).toFixed(1) }}%</dd>
+          </dl>
+        </div>
+
+        @if (breakdownOpen() && breakdown(); as bd) {
+          <div class="card card-pad" data-testid="breakdown-panel">
+            <app-price-breakdown [breakdown]="bd" heading="Stored price snapshot" />
+          </div>
+        }
+      </div>
+
+      <aside class="stack">
+        <div class="card">
+          <div class="card-head"><h3>Nesting preview</h3></div>
+          <div class="card-body">
+            @if (drawing(); as dwg) {
+              <app-work-bed-canvas
+                [polylines]="dwg.polylines"
+                [partW]="dwg.bboxWMm"
+                [partH]="dwg.bboxHMm"
+                [sheetW]="material()?.sheetWMm ?? 0"
+                [sheetH]="material()?.sheetHMm ?? 0"
+                [nesting]="nesting()"
+              />
+            }
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <h3>Re-order</h3>
+          <p class="small muted">Need the same part again at today’s prices? Start a fresh quote from this drawing.</p>
+          <a routerLink="/quotes/new/material" class="btn btn-secondary btn-block" data-testid="quote-reorder">
+            Re-quote this drawing
+          </a>
+        </div>
+      </aside>
+    </div>
+  } @else if (loading()) {
+    <div class="card card-pad loading"><span class="spinner"></span> Loading quote…</div>
+  } @else if (error()) {
+    <div class="card card-pad state" data-testid="quote-detail-error">
+      <span class="state-icon" aria-hidden="true">⚠</span>
+      <h3>Something went wrong</h3>
+      <p class="muted">{{ error() }}</p>
+      <a routerLink="/quotes" class="btn btn-secondary mt-4">Back to quotes</a>
+    </div>
+  }
 </section>

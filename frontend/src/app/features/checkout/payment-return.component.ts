@@ -1,10 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DraftStore } from '../../core/draft-store';
-import { CheckoutStore } from './checkout.store';
+import { firstValueFrom } from 'rxjs';
+import { CheckoutApi } from '../../core/api/checkout.service';
 import { money } from '../../core/models';
 
 type PollState = 'pending' | 'confirmed' | 'timeout';
+
+/** Backoff (ms) between reconciliation checks: ~1s, 2s, 4s, 8s, 8s (~23s total). */
+const POLL_DELAYS_MS = [1000, 2000, 4000, 8000, 8000];
 
 @Component({
   selector: 'app-payment-return',
@@ -14,8 +17,7 @@ type PollState = 'pending' | 'confirmed' | 'timeout';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentReturnComponent implements OnInit, OnDestroy {
-  readonly draft = inject(DraftStore);
-  readonly checkout = inject(CheckoutStore);
+  private readonly api = inject(CheckoutApi);
 
   readonly quoteId = input<string>('');
   /** `?session_id` — the Stripe Checkout Session we reconcile against. */
@@ -24,29 +26,62 @@ export class PaymentReturnComponent implements OnInit, OnDestroy {
   readonly money = money;
   readonly state = signal<PollState>('pending');
   readonly attempt = signal(1);
-  readonly orderId = 'ord_9f21';
-  readonly orderNumber = 'NGL-2026-004182';
 
-  readonly totalCents = computed(
-    () => (this.draft.breakdown()?.totalCents ?? 0) + this.checkout.shippingCostCents(),
-  );
+  readonly orderId = signal<string | null>(null);
+  readonly orderNumber = signal<string | null>(null);
+  readonly totalCents = signal(0);
 
   private timers: ReturnType<typeof setTimeout>[] = [];
 
   ngOnInit(): void {
-    // Bounded backoff while we wait for the webhook; the reconciliation call is
-    // the fallback path when it never lands.
-    this.timers.push(setTimeout(() => this.attempt.set(2), 900));
-    this.timers.push(setTimeout(() => this.state.set('confirmed'), 2200));
+    void this.poll();
   }
 
   ngOnDestroy(): void {
     this.timers.forEach(clearTimeout);
+    this.timers = [];
   }
 
   retry(): void {
-    this.state.set('pending');
+    this.timers.forEach(clearTimeout);
+    this.timers = [];
     this.attempt.set(1);
-    this.timers.push(setTimeout(() => this.state.set('confirmed'), 1600));
+    this.state.set('pending');
+    void this.poll();
+  }
+
+  /**
+   * Return-page reconciliation: confirms the order even if the webhook is
+   * late. Polls with increasing backoff and gives up into the 'timeout' state
+   * — the order is still safe server-side, only the confirmation UI is stuck.
+   */
+  private async poll(): Promise<void> {
+    try {
+      const result = await firstValueFrom(this.api.status(this.quoteId(), this.sessionId()));
+      if (result.state === 'confirmed') {
+        this.orderId.set(result.orderId);
+        this.orderNumber.set(result.orderNumber);
+        this.totalCents.set(result.totalCents);
+        this.state.set('confirmed');
+        return;
+      }
+    } catch {
+      // Treat a transient failure the same as 'pending' — keep polling within
+      // the bounded backoff rather than surfacing a scary error mid-payment.
+    }
+
+    const attemptIndex = this.attempt() - 1;
+    if (attemptIndex >= POLL_DELAYS_MS.length) {
+      this.state.set('timeout');
+      return;
+    }
+
+    const delay = POLL_DELAYS_MS[attemptIndex];
+    this.timers.push(
+      setTimeout(() => {
+        this.attempt.update((a) => a + 1);
+        void this.poll();
+      }, delay),
+    );
   }
 }

@@ -8,20 +8,21 @@
   </div>
 
   <div class="card-body">
+    @if (error()) { <div class="alert alert-danger mb-4">{{ error() }}</div> }
     <div class="admin-form">
       <div class="field full">
         <label for="b-name">Company name</label>
-        <input id="b-name" type="text" [(ngModel)]="companyName" name="companyName" (ngModelChange)="touch()"
-               data-testid="branding-company-name" />
+        <input id="b-name" type="text" [ngModel]="form().companyName" name="companyName"
+               (ngModelChange)="patch('companyName', $event)" data-testid="branding-company-name" />
       </div>
 
       <div class="field">
         <label for="b-primary">Primary colour</label>
         <div class="swatch-row">
-          <input id="b-primary" type="color" [(ngModel)]="primaryColor" name="primaryColor"
-                 (ngModelChange)="touch()" data-testid="branding-primary-color" />
-          <input type="text" class="mono" [(ngModel)]="primaryColor" name="primaryHex" (ngModelChange)="touch()"
-                 aria-label="Primary colour hex value" />
+          <input id="b-primary" type="color" [ngModel]="form().primaryColor" name="primaryColor"
+                 (ngModelChange)="patch('primaryColor', $event)" data-testid="branding-primary-color" />
+          <input type="text" class="mono" [ngModel]="form().primaryColor" name="primaryHex"
+                 (ngModelChange)="patch('primaryColor', $event)" aria-label="Primary colour hex value" />
         </div>
         <p class="hint">Buttons, links and cut paths on the work bed.</p>
       </div>
@@ -29,10 +30,10 @@
       <div class="field">
         <label for="b-accent">Accent colour</label>
         <div class="swatch-row">
-          <input id="b-accent" type="color" [(ngModel)]="accentColor" name="accentColor"
-                 (ngModelChange)="touch()" data-testid="branding-accent-color" />
-          <input type="text" class="mono" [(ngModel)]="accentColor" name="accentHex" (ngModelChange)="touch()"
-                 aria-label="Accent colour hex value" />
+          <input id="b-accent" type="color" [ngModel]="form().accentColor" name="accentColor"
+                 (ngModelChange)="patch('accentColor', $event)" data-testid="branding-accent-color" />
+          <input type="text" class="mono" [ngModel]="form().accentColor" name="accentHex"
+                 (ngModelChange)="patch('accentColor', $event)" aria-label="Accent colour hex value" />
         </div>
         <p class="hint">Bend lines and highlights.</p>
       </div>

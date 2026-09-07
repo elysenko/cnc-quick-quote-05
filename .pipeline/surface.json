@@ -6,18 +6,56 @@
     "hardLimit": 500
   },
   "routes": [
-    {
-      "method": "GET",
-      "path": "/health"
-    },
-    {
-      "method": "GET",
-      "path": "/trpc/users.findAll"
-    },
-    {
-      "method": "GET",
-      "path": "/trpc/users.findById"
-    }
+    { "method": "GET", "path": "/health" },
+    { "method": "GET", "path": "/api/health" },
+    { "method": "GET", "path": "/api/health/deep" },
+    { "method": "POST", "path": "/api/auth/register" },
+    { "method": "POST", "path": "/api/auth/login" },
+    { "method": "POST", "path": "/api/auth/refresh" },
+    { "method": "POST", "path": "/api/auth/logout" },
+    { "method": "GET", "path": "/api/auth/me" },
+    { "method": "PATCH", "path": "/api/auth/profile" },
+    { "method": "PATCH", "path": "/api/auth/password" },
+    { "method": "POST", "path": "/api/drawings" },
+    { "method": "GET", "path": "/api/drawings" },
+    { "method": "GET", "path": "/api/drawings/:id" },
+    { "method": "GET", "path": "/api/drawings/:id/geometry" },
+    { "method": "GET", "path": "/api/drawings/:drawingId/bends" },
+    { "method": "POST", "path": "/api/drawings/:drawingId/bends" },
+    { "method": "PATCH", "path": "/api/bends/:id" },
+    { "method": "DELETE", "path": "/api/bends/:id" },
+    { "method": "GET", "path": "/api/materials" },
+    { "method": "POST", "path": "/api/quotes" },
+    { "method": "GET", "path": "/api/quotes" },
+    { "method": "GET", "path": "/api/quotes/:id" },
+    { "method": "GET", "path": "/api/checkout/:quoteId" },
+    { "method": "GET", "path": "/api/checkout/:quoteId/shipping-methods" },
+    { "method": "POST", "path": "/api/checkout/:quoteId/session" },
+    { "method": "GET", "path": "/api/checkout/:quoteId/status" },
+    { "method": "POST", "path": "/api/webhooks/stripe" },
+    { "method": "GET", "path": "/api/orders" },
+    { "method": "GET", "path": "/api/orders/:id" },
+    { "method": "GET", "path": "/api/orders/:id/receipt" },
+    { "method": "GET", "path": "/api/business" },
+    { "method": "GET", "path": "/api/business/logo" },
+    { "method": "GET", "path": "/api/config/machine" },
+    { "method": "GET", "path": "/api/config/pricing" },
+    { "method": "GET", "path": "/api/admin/materials" },
+    { "method": "POST", "path": "/api/admin/materials" },
+    { "method": "PATCH", "path": "/api/admin/materials/:id" },
+    { "method": "GET", "path": "/api/admin/pricing" },
+    { "method": "PUT", "path": "/api/admin/pricing" },
+    { "method": "GET", "path": "/api/admin/machine" },
+    { "method": "PUT", "path": "/api/admin/machine" },
+    { "method": "GET", "path": "/api/admin/business" },
+    { "method": "PUT", "path": "/api/admin/business" },
+    { "method": "POST", "path": "/api/admin/business/logo" },
+    { "method": "GET", "path": "/api/admin/shipping-methods" },
+    { "method": "POST", "path": "/api/admin/shipping-methods" },
+    { "method": "PATCH", "path": "/api/admin/shipping-methods/:id" },
+    { "method": "GET", "path": "/api/admin/orders" },
+    { "method": "GET", "path": "/api/admin/settings" },
+    { "method": "PATCH", "path": "/api/admin/settings" }
   ],
   "components": [
     {

@@ -18,9 +18,9 @@
           <h2>Payment received</h2>
           <p class="muted">
             We’ve taken {{ money(totalCents()) }} and created order
-            <strong class="mono">{{ orderNumber }}</strong>.
+            <strong class="mono">{{ orderNumber() }}</strong>.
           </p>
-          <a [routerLink]="['/orders', orderId, 'confirmation']" class="btn btn-primary btn-lg mt-4"
+          <a [routerLink]="['/orders', orderId(), 'confirmation']" class="btn btn-primary btn-lg mt-4"
              data-testid="payment-to-confirmation">
             View your confirmation →
           </a>

@@ -1,6 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { AdminApi } from '../../core/api/admin.service';
+import { toAppError } from '../../core/errors';
 import { ShippingKind, ShippingMethod } from '../../core/models';
 
 @Component({
@@ -11,17 +14,17 @@ import { ShippingKind, ShippingMethod } from '../../core/models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShippingMethodsComponent {
+  private readonly api = inject(AdminApi);
+
   /** `?modal=shipping-method&id=…` — deep-linkable create/edit state. */
   readonly modal = input<string | undefined>();
   readonly id = input<string | undefined>();
 
-  readonly methods = signal<ShippingMethod[]>([
-    { id: 'shp_std', name: 'Standard freight', kind: 'flat', rate: 24.5, estDays: 5, isActive: true },
-    { id: 'shp_exp', name: 'Express courier', kind: 'flat', rate: 58, estDays: 2, isActive: true },
-    { id: 'shp_pal', name: 'Palletised (per sheet)', kind: 'per_sheet', rate: 18, estDays: 4, isActive: true },
-    { id: 'shp_col', name: 'Collect from works', kind: 'flat', rate: 0, estDays: 1, isActive: true },
-    { id: 'shp_ovn', name: 'Overnight priority', kind: 'flat', rate: 96, estDays: 1, isActive: false },
-  ]);
+  readonly methods = signal<ShippingMethod[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly saving = signal(false);
+  readonly saveError = signal<string | null>(null);
 
   readonly modalOpen = computed(() => this.modal() === 'shipping-method');
   readonly editing = computed(() => this.methods().find((m) => m.id === this.id()) ?? null);
@@ -34,8 +37,33 @@ export class ShippingMethodsComponent {
     return { id: '', name: '', kind: 'flat', rate: 0, estDays: 3, isActive: true };
   }
 
+  constructor() {
+    void this.load();
+    // Keep the form in step with whichever method the URL points at, including
+    // once the real list has finished loading (deep link to an edit modal).
+    effect(() => {
+      this.modal();
+      this.id();
+      this.methods();
+      this.syncDraft();
+    });
+  }
+
+  private async load(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      this.methods.set(await firstValueFrom(this.api.shippingMethods()));
+    } catch (err) {
+      this.error.set(toAppError(err).message);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
   syncDraft(): void {
     this.draft.set(this.editing() ? { ...this.editing()! } : this.blank());
+    this.saveError.set(null);
   }
 
   patch<K extends keyof ShippingMethod>(key: K, value: ShippingMethod[K]): void {
@@ -46,18 +74,35 @@ export class ShippingMethodsComponent {
     this.patch('kind', kind);
   }
 
-  save(): void {
+  async save(): Promise<void> {
     const d = this.draft();
-    if (d.id) {
-      this.methods.update((list) => list.map((m) => (m.id === d.id ? { ...d } : m)));
-    } else {
-      this.methods.update((list) => [...list, { ...d, id: `shp_new${list.length}` }]);
+    this.saving.set(true);
+    this.saveError.set(null);
+    try {
+      if (d.id) {
+        const { id, resolvedCostCents, ...patch } = d;
+        const updated = await firstValueFrom(this.api.updateShippingMethod(id, patch));
+        this.methods.update((list) => list.map((m) => (m.id === updated.id ? updated : m)));
+      } else {
+        const { id, resolvedCostCents, ...input } = d;
+        const created = await firstValueFrom(this.api.createShippingMethod(input));
+        this.methods.update((list) => [...list, created]);
+      }
+    } catch (err) {
+      this.saveError.set(toAppError(err).message);
+    } finally {
+      this.saving.set(false);
     }
   }
 
-  toggleActive(method: ShippingMethod): void {
-    this.methods.update((list) =>
-      list.map((m) => (m.id === method.id ? { ...m, isActive: !m.isActive } : m)),
-    );
+  async toggleActive(method: ShippingMethod): Promise<void> {
+    try {
+      const updated = await firstValueFrom(
+        this.api.updateShippingMethod(method.id, { isActive: !method.isActive }),
+      );
+      this.methods.update((list) => list.map((m) => (m.id === updated.id ? updated : m)));
+    } catch (err) {
+      this.error.set(toAppError(err).message);
+    }
   }
 }

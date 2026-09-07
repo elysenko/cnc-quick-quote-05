@@ -51,18 +51,34 @@ export class BendsService {
   async create(drawingId: string, userId: string, dto: CreateBendDto): Promise<BendLineDto> {
     await this.drawings.findOwned(drawingId, userId);
     const row = await this.prisma.bendLine.create({ data: { drawingId, ...dto } });
+    await this.expireDraftQuotes(drawingId);
     return BendsService.toDto(row);
   }
 
   async update(id: string, userId: string, dto: UpdateBendDto): Promise<BendLineDto> {
     const existing = await this.findOwned(id, userId);
     const row = await this.prisma.bendLine.update({ where: { id: existing.id }, data: dto });
+    await this.expireDraftQuotes(existing.drawingId);
     return BendsService.toDto(row);
   }
 
   async remove(id: string, userId: string): Promise<void> {
     const existing = await this.findOwned(id, userId);
     await this.prisma.bendLine.delete({ where: { id: existing.id } });
+    await this.expireDraftQuotes(existing.drawingId);
+  }
+
+  /**
+   * A bend edit invalidates any draft quote's frozen nesting/pricing snapshot
+   * for this drawing — mark it expired so the customer is forced through
+   * quote recalculation rather than checking out against stale numbers.
+   * Ordered quotes are untouched: their snapshot is historical record.
+   */
+  private async expireDraftQuotes(drawingId: string): Promise<void> {
+    await this.prisma.quote.updateMany({
+      where: { drawingId, status: 'draft' },
+      data: { status: 'expired' },
+    });
   }
 
   private async findOwned(id: string, userId: string): Promise<BendLine> {
