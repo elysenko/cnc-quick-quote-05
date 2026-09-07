@@ -1,0 +1,111 @@
+<div class="card" data-testid="admin-shipping">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Delivery methods</h2>
+      <p class="xsmall muted mb-0">Per-sheet rates are multiplied by the quote’s sheet count.</p>
+    </div>
+    <a routerLink="/admin/business/shipping" [queryParams]="{ modal: 'shipping-method' }"
+       class="btn btn-primary btn-sm" (click)="syncDraft()" data-testid="shipping-add">+ Add method</a>
+  </div>
+
+  @if (activeCount() === 0) {
+    <div class="card-body">
+      <div class="alert alert-danger" data-testid="shipping-none-active">
+        <p>
+          No delivery methods are active. Customers cannot complete checkout until at least one is
+          switched on.
+        </p>
+      </div>
+    </div>
+  }
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th scope="col">Method</th>
+          <th scope="col">Type</th>
+          <th scope="col">Rate</th>
+          <th scope="col">Est. days</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (method of methods(); track method.id) {
+          <tr [attr.data-testid]="'shipping-row-' + method.id">
+            <td class="strong">{{ method.name }}</td>
+            <td>{{ method.kind === 'per_sheet' ? 'Per sheet' : 'Flat rate' }}</td>
+            <td class="mono">${{ method.rate.toFixed(2) }}</td>
+            <td class="mono">{{ method.estDays }}</td>
+            <td>
+              <span [class]="method.isActive ? 'badge badge-ok' : 'badge'">
+                {{ method.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <a routerLink="/admin/business/shipping" [queryParams]="{ modal: 'shipping-method', id: method.id }"
+                   class="btn btn-secondary btn-sm" (click)="syncDraft()"
+                   [attr.data-testid]="'shipping-edit-' + method.id">Edit</a>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="toggleActive(method)">
+                  {{ method.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modalOpen()) {
+  <div class="scrim" data-testid="shipping-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shipping-modal-title">
+      <div class="modal-head">
+        <h2 id="shipping-modal-title">{{ modalTitle() }}</h2>
+        <a routerLink="/admin/business/shipping" class="close-x" aria-label="Close">✕</a>
+      </div>
+      <div class="modal-body">
+        <div class="admin-form">
+          <div class="field full">
+            <label for="sm-name">Name</label>
+            <input id="sm-name" type="text" [ngModel]="draft().name" name="smName"
+                   (ngModelChange)="patch('name', $event)" placeholder="e.g. Standard freight"
+                   data-testid="shipping-name-input" />
+          </div>
+          <div class="field full">
+            <span class="label">Rate type</span>
+            <div class="seg">
+              <button type="button" [class.on]="draft().kind === 'flat'" (click)="setKind('flat')">Flat rate</button>
+              <button type="button" [class.on]="draft().kind === 'per_sheet'" (click)="setKind('per_sheet')">
+                Per sheet
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="sm-rate">Rate ($)</label>
+            <input id="sm-rate" type="number" step="0.01" min="0" [ngModel]="draft().rate" name="smRate"
+                   (ngModelChange)="patch('rate', $event)" data-testid="shipping-rate-input" />
+          </div>
+          <div class="field">
+            <label for="sm-days">Estimated days</label>
+            <input id="sm-days" type="number" min="1" step="1" [ngModel]="draft().estDays" name="smDays"
+                   (ngModelChange)="patch('estDays', $event)" />
+          </div>
+          <label class="switch full">
+            <input type="checkbox" [ngModel]="draft().isActive" name="smActive"
+                   (ngModelChange)="patch('isActive', $event)" />
+            Offer this method at checkout
+          </label>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <a routerLink="/admin/business/shipping" class="btn btn-secondary">Cancel</a>
+        <a routerLink="/admin/business/shipping" class="btn btn-primary" (click)="save()"
+           data-testid="shipping-save">Save method</a>
+      </div>
+    </div>
+  </div>
+}

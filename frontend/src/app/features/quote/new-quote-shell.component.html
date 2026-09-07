@@ -1,0 +1,22 @@
+<section class="page" data-testid="new-quote-shell">
+  <div class="page-head">
+    <div>
+      <h1>New quote</h1>
+      <p class="sub">Upload a DXF, mark your bends, then choose material and quantity.</p>
+    </div>
+    <a routerLink="/quotes" class="btn btn-ghost btn-sm">Cancel</a>
+  </div>
+
+  <ol class="steps" data-testid="wizard-steps">
+    @for (step of steps; track step.key; let i = $index) {
+      <li [class.active]="i === activeIndex()" [class.done]="i < activeIndex()">
+        <a [routerLink]="step.path" [attr.data-testid]="'wizard-step-' + step.key">
+          <span class="step-num" aria-hidden="true">{{ i < activeIndex() ? '✓' : i + 1 }}</span>
+          <span class="step-label">{{ step.label }}</span>
+        </a>
+      </li>
+    }
+  </ol>
+
+  <router-outlet />
+</section>

@@ -1,0 +1,46 @@
+<section class="page" data-testid="orders-list">
+  <div class="page-head">
+    <div>
+      <h1>My orders</h1>
+      <p class="sub">{{ orders().length }} order{{ orders().length === 1 ? '' : 's' }}</p>
+    </div>
+    <a routerLink="/quotes/new/upload" class="btn btn-secondary">+ New quote</a>
+  </div>
+
+  @if (visible().length === 0) {
+    <div class="card card-pad state" data-testid="orders-empty">
+      <span class="state-icon" aria-hidden="true">▤</span>
+      <h3>No orders yet</h3>
+      <p class="muted">Once you pay for a quote it’ll appear here with its receipt.</p>
+      <a routerLink="/quotes" class="btn btn-primary mt-4">View my quotes</a>
+    </div>
+  } @else {
+    <div class="card">
+      @for (order of visible(); track order.id) {
+        <a class="list-row order-row" [routerLink]="['/orders', order.id]"
+           [attr.data-testid]="'order-row-' + order.id">
+          <span class="o-main">
+            <span class="o-number">{{ order.orderNumber }}</span>
+            <span class="o-meta xsmall muted">{{ order.materialName }} · ×{{ order.quantity }} · {{ order.shippingMethodName }}</span>
+          </span>
+          <span [class]="badgeClass(order.status)" class="o-status">{{ label(order.status) }}</span>
+          <span class="o-total mono">{{ money(order.totalCents) }}</span>
+          <span class="o-chevron" aria-hidden="true">›</span>
+        </a>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <nav class="pager" aria-label="Pagination">
+        @if (currentPage() > 1) {
+          <a routerLink="/orders" [queryParams]="{ page: currentPage() - 1 }" class="btn btn-secondary btn-sm">← Previous</a>
+        }
+        <span class="small muted">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        @if (currentPage() < totalPages()) {
+          <a routerLink="/orders" [queryParams]="{ page: currentPage() + 1 }" class="btn btn-secondary btn-sm"
+             data-testid="orders-next-page">Next →</a>
+        }
+      </nav>
+    }
+  }
+</section>

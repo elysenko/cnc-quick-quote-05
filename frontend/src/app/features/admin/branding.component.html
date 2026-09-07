@@ -1,0 +1,59 @@
+<div class="card" data-testid="admin-branding">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Branding</h2>
+      <p class="xsmall muted mb-0">Applied across the customer app, receipts and confirmation emails.</p>
+    </div>
+    @if (dirty()) { <span class="dirty-note">Unsaved changes</span> }
+  </div>
+
+  <div class="card-body">
+    <div class="admin-form">
+      <div class="field full">
+        <label for="b-name">Company name</label>
+        <input id="b-name" type="text" [(ngModel)]="companyName" name="companyName" (ngModelChange)="touch()"
+               data-testid="branding-company-name" />
+      </div>
+
+      <div class="field">
+        <label for="b-primary">Primary colour</label>
+        <div class="swatch-row">
+          <input id="b-primary" type="color" [(ngModel)]="primaryColor" name="primaryColor"
+                 (ngModelChange)="touch()" data-testid="branding-primary-color" />
+          <input type="text" class="mono" [(ngModel)]="primaryColor" name="primaryHex" (ngModelChange)="touch()"
+                 aria-label="Primary colour hex value" />
+        </div>
+        <p class="hint">Buttons, links and cut paths on the work bed.</p>
+      </div>
+
+      <div class="field">
+        <label for="b-accent">Accent colour</label>
+        <div class="swatch-row">
+          <input id="b-accent" type="color" [(ngModel)]="accentColor" name="accentColor"
+                 (ngModelChange)="touch()" data-testid="branding-accent-color" />
+          <input type="text" class="mono" [(ngModel)]="accentColor" name="accentHex" (ngModelChange)="touch()"
+                 aria-label="Accent colour hex value" />
+        </div>
+        <p class="hint">Bend lines and highlights.</p>
+      </div>
+
+      <div class="field full">
+        <label for="b-logo">Logo</label>
+        <input id="b-logo" type="file" accept="image/png,image/jpeg,image/svg+xml" (change)="onLogo($event)"
+               data-testid="branding-logo-upload" />
+        @if (logoName()) {
+          <p class="hint" data-testid="branding-logo-name">Selected: {{ logoName() }}</p>
+        } @else {
+          <p class="hint">PNG, JPEG or SVG. Falls back to the company initials if none is set.</p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="card-foot save-bar">
+    @if (saved()) { <span class="badge badge-ok" data-testid="branding-saved">Saved</span> }
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-primary" [disabled]="!dirty()" (click)="save()"
+            data-testid="branding-save">Save branding</button>
+  </div>
+</div>

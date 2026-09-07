@@ -1,0 +1,74 @@
+<div class="auth-page">
+  <div class="auth-panel">
+    <a class="auth-brand" href="#" (click)="$event.preventDefault()">
+      <span class="auth-mark" aria-hidden="true">{{ branding.initials() }}</span>
+      <span>{{ branding.companyName() }}</span>
+    </a>
+
+    <h1>Create an account</h1>
+    <p class="muted">Upload a drawing and price your part in under a minute.</p>
+
+    @if (formError()) {
+      <div class="alert alert-danger mb-4" role="alert" data-testid="signup-error">
+        <p>{{ formError() }}</p>
+      </div>
+    }
+
+    <form class="stack" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="signup-name">Full name</label>
+        <input id="signup-name" name="name" type="text" autocomplete="name" [(ngModel)]="name"
+               [class.invalid]="!!errors()['name']" data-testid="signup-name" />
+        @if (errors()['name']) { <p class="field-error">{{ errors()['name'] }}</p> }
+      </div>
+
+      <div class="field">
+        <label for="signup-email">Email address</label>
+        <input id="signup-email" name="email" type="email" autocomplete="email" inputmode="email"
+               placeholder="you@company.com" [(ngModel)]="email"
+               [class.invalid]="!!errors()['email']" data-testid="signup-email" />
+        @if (errors()['email']) { <p class="field-error">{{ errors()['email'] }}</p> }
+      </div>
+
+      <div class="field">
+        <label for="signup-password">Password</label>
+        <input id="signup-password" name="password" type="password" autocomplete="new-password"
+               [(ngModel)]="password" [class.invalid]="!!errors()['password']" data-testid="signup-password" />
+        <p class="hint">At least 8 characters.</p>
+        @if (errors()['password']) { <p class="field-error">{{ errors()['password'] }}</p> }
+      </div>
+
+      <div class="field">
+        <label for="signup-confirm">Confirm password</label>
+        <input id="signup-confirm" name="confirm" type="password" autocomplete="new-password"
+               [(ngModel)]="confirm" [class.invalid]="!!errors()['confirm']" data-testid="signup-confirm" />
+        @if (errors()['confirm']) { <p class="field-error">{{ errors()['confirm'] }}</p> }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="submitting()" data-testid="signup-submit">
+        @if (submitting()) { <span class="spinner" aria-hidden="true"></span> Creating account… } @else { Create account }
+      </button>
+
+      @if (previewShortcut) {
+        <button type="button" class="btn btn-ghost btn-block preview-shortcut" (click)="useShortcut()">
+          {{ previewShortcut }}
+        </button>
+      }
+    </form>
+
+    <p class="auth-alt small">
+      Already registered? <a routerLink="/login" data-testid="signup-to-login">Sign in</a>
+    </p>
+  </div>
+
+  <aside class="auth-aside" aria-hidden="true">
+    <h2>Everything you need to order a part</h2>
+    <ol class="auth-steps">
+      <li><span>◇</span> Live nesting and sheet count</li>
+      <li><span>◈</span> Itemised, transparent pricing</li>
+      <li><span>◆</span> Card payment and emailed receipt</li>
+      <li><span>◉</span> Full order history</li>
+    </ol>
+    <p class="auth-note">Your drawings stay private to your account.</p>
+  </aside>
+</div>

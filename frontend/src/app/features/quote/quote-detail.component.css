@@ -1,0 +1,4 @@
+.back-link { color: var(--ink-500); font-weight: 600; display: inline-flex; min-height: 32px; align-items: center; }
+.totals { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
+.total-amount { font-size: var(--fs-2xl); font-weight: 750; letter-spacing: -0.02em; }
+@media (max-width: 560px) { .page-head .row .btn { flex: 1 1 auto; } }

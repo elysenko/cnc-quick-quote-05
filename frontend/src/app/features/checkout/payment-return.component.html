@@ -1,0 +1,45 @@
+<div class="card" data-testid="checkout-payment">
+  <div class="card-body">
+    @switch (state()) {
+      @case ('pending') {
+        <div class="state" data-testid="payment-pending">
+          <span class="spinner big" aria-hidden="true"></span>
+          <h2 class="mt-4">Confirming your payment…</h2>
+          <p class="muted">
+            Stripe has taken the payment. We’re waiting for confirmation to land — this usually takes a
+            couple of seconds. Don’t close this page.
+          </p>
+          <p class="xsmall muted mono">Session {{ sessionId() || 'cs_test_…' }} · check {{ attempt() }}</p>
+        </div>
+      }
+      @case ('confirmed') {
+        <div class="state" data-testid="payment-confirmed">
+          <span class="state-icon success" aria-hidden="true">✓</span>
+          <h2>Payment received</h2>
+          <p class="muted">
+            We’ve taken {{ money(totalCents()) }} and created order
+            <strong class="mono">{{ orderNumber }}</strong>.
+          </p>
+          <a [routerLink]="['/orders', orderId, 'confirmation']" class="btn btn-primary btn-lg mt-4"
+             data-testid="payment-to-confirmation">
+            View your confirmation →
+          </a>
+        </div>
+      }
+      @case ('timeout') {
+        <div class="state" data-testid="payment-timeout">
+          <span class="state-icon" aria-hidden="true">⏱</span>
+          <h2>Still confirming</h2>
+          <p class="muted">
+            Your card was charged but confirmation hasn’t reached us yet. Your order is safe — check again
+            in a moment or look in your order history.
+          </p>
+          <div class="row mt-4 center-actions">
+            <button type="button" class="btn btn-primary" (click)="retry()">Check again</button>
+            <a routerLink="/orders" class="btn btn-secondary">My orders</a>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,9 @@
+.headline { display: flex; flex-direction: column; gap: 2px; padding-bottom: var(--sp-4); margin-bottom: var(--sp-2); border-bottom: 1px solid var(--ink-100); }
+.headline-amount { font-size: var(--fs-2xl); font-weight: 750; letter-spacing: -0.02em; }
+.actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; }
+.actions .btn-primary { margin-left: auto; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 16ch; }
+@media (max-width: 560px) {
+  .actions { flex-direction: column-reverse; align-items: stretch; }
+  .actions .btn { width: 100%; margin-left: 0; }
+}

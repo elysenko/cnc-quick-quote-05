@@ -1,0 +1,34 @@
+<div class="breakdown" data-testid="price-breakdown">
+  <h3 class="breakdown-title">{{ heading() }}</h3>
+
+  <ul class="lines">
+    @for (line of breakdown().lines; track line.key) {
+      <li [attr.data-testid]="'breakdown-line-' + line.key">
+        <span class="line-label">
+          {{ line.label }}
+          <span class="line-detail xsmall muted">{{ line.detail }}</span>
+        </span>
+        <span class="line-amount mono">{{ money(line.amountCents) }}</span>
+      </li>
+    }
+  </ul>
+
+  <div class="subtotal">
+    <span>Subtotal</span>
+    <span class="mono">{{ money(breakdown().subtotalCents) }}</span>
+  </div>
+
+  @if (breakdown().minimumApplied) {
+    <div class="alert alert-warn minimum" data-testid="minimum-applied">
+      <p>
+        <span class="badge badge-warn">Minimum applied</span>
+        This job falls below the shop minimum, so the minimum order charge is billed instead of the subtotal.
+      </p>
+    </div>
+  }
+
+  <div class="total">
+    <span>Total</span>
+    <span class="mono" data-testid="breakdown-total">{{ money(breakdown().totalCents) }}</span>
+  </div>
+</div>

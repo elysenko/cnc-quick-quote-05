@@ -1,0 +1,4 @@
+.units-guard { border-left: 3px solid var(--brand-primary); }
+.units-guard h3 { font-variant-numeric: tabular-nums; }
+.card-foot.row-between { gap: var(--sp-2); }
+@media (max-width: 520px) { .card-foot.row-between .btn { width: 100%; } }

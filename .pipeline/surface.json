@@ -1,22 +1,991 @@
 {
   "_generated": true,
   "_scaffolded_at": "2026-09-07T00:00:00Z",
-  "fileBudget": { "maxLines": 400, "hardLimit": 500 },
+  "fileBudget": {
+    "maxLines": 400,
+    "hardLimit": 500
+  },
   "routes": [
-    { "method": "GET", "path": "/health" },
-    { "method": "GET", "path": "/trpc/users.findAll" },
-    { "method": "GET", "path": "/trpc/users.findById" }
+    {
+      "method": "GET",
+      "path": "/health"
+    },
+    {
+      "method": "GET",
+      "path": "/trpc/users.findAll"
+    },
+    {
+      "method": "GET",
+      "path": "/trpc/users.findById"
+    }
   ],
   "components": [
-    { "selector": "app-root", "file": "frontend/src/app/app.component.ts", "maxLines": 400 },
-    { "selector": "app-home", "file": "frontend/src/app/home/home.component.ts", "maxLines": 400 }
+    {
+      "selector": "app-root",
+      "file": "frontend/src/app/app.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-account",
+      "file": "frontend/src/app/features/account/account.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-orders",
+      "file": "frontend/src/app/features/admin/admin-orders.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-shell",
+      "file": "frontend/src/app/features/admin/admin-shell.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-branding",
+      "file": "frontend/src/app/features/admin/branding.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-business-shell",
+      "file": "frontend/src/app/features/admin/business-shell.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-contact",
+      "file": "frontend/src/app/features/admin/contact.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-machine",
+      "file": "frontend/src/app/features/admin/machine.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-materials",
+      "file": "frontend/src/app/features/admin/materials.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-payments",
+      "file": "frontend/src/app/features/admin/payments.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-pricing",
+      "file": "frontend/src/app/features/admin/pricing.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-settings",
+      "file": "frontend/src/app/features/admin/settings.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-admin-shipping-methods",
+      "file": "frontend/src/app/features/admin/shipping-methods.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-login",
+      "file": "frontend/src/app/features/auth/login.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-signup",
+      "file": "frontend/src/app/features/auth/signup.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-checkout-shell",
+      "file": "frontend/src/app/features/checkout/checkout-shell.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-payment-return",
+      "file": "frontend/src/app/features/checkout/payment-return.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-review-step",
+      "file": "frontend/src/app/features/checkout/review-step.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-shipping-step",
+      "file": "frontend/src/app/features/checkout/shipping-step.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-order-confirmation",
+      "file": "frontend/src/app/features/orders/order-confirmation.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-order-detail",
+      "file": "frontend/src/app/features/orders/order-detail.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-order-list",
+      "file": "frontend/src/app/features/orders/order-list.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-bends-step",
+      "file": "frontend/src/app/features/quote/bends-step.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-bend-editor-canvas",
+      "file": "frontend/src/app/features/quote/components/bend-editor-canvas.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-price-breakdown",
+      "file": "frontend/src/app/features/quote/components/price-breakdown.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-work-bed-canvas",
+      "file": "frontend/src/app/features/quote/components/work-bed-canvas.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-material-step",
+      "file": "frontend/src/app/features/quote/material-step.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-new-quote-shell",
+      "file": "frontend/src/app/features/quote/new-quote-shell.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-quote-detail",
+      "file": "frontend/src/app/features/quote/quote-detail.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-quote-list",
+      "file": "frontend/src/app/features/quote/quote-list.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-result-step",
+      "file": "frontend/src/app/features/quote/result-step.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-upload-step",
+      "file": "frontend/src/app/features/quote/upload-step.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-forbidden",
+      "file": "frontend/src/app/shared/forbidden.component.ts",
+      "maxLines": 400
+    },
+    {
+      "selector": "app-not-found",
+      "file": "frontend/src/app/shared/not-found.component.ts",
+      "maxLines": 400
+    }
   ],
   "testIds": [
-    { "id": "app-ready", "element": "div", "component": "app-root" },
-    { "id": "home-main", "element": "main", "component": "app-home" },
-    { "id": "home-title", "element": "h1", "component": "app-home" },
-    { "id": "users-loading", "element": "p", "component": "app-home" },
-    { "id": "users-error", "element": "p", "component": "app-home" },
-    { "id": "users-list", "element": "ul", "component": "app-home" }
+    {
+      "id": "app-ready",
+      "element": "div",
+      "component": "app-root"
+    },
+    {
+      "id": "account",
+      "element": "section",
+      "component": "app-account"
+    },
+    {
+      "id": "account-name",
+      "element": "input",
+      "component": "app-account"
+    },
+    {
+      "id": "account-email",
+      "element": "input",
+      "component": "app-account"
+    },
+    {
+      "id": "account-saved",
+      "element": "div",
+      "component": "app-account"
+    },
+    {
+      "id": "account-save",
+      "element": "button",
+      "component": "app-account"
+    },
+    {
+      "id": "account-change-password",
+      "element": "button",
+      "component": "app-account"
+    },
+    {
+      "id": "account-signout",
+      "element": "button",
+      "component": "app-account"
+    },
+    {
+      "id": "admin-orders",
+      "element": "div",
+      "component": "app-admin-orders"
+    },
+    {
+      "id": "admin-orders-empty",
+      "element": "div",
+      "component": "app-admin-orders"
+    },
+    {
+      "id": "admin-orders-next-page",
+      "element": "a",
+      "component": "app-admin-orders"
+    },
+    {
+      "id": "admin-shell",
+      "element": "section",
+      "component": "app-admin-shell"
+    },
+    {
+      "id": "admin-branding",
+      "element": "div",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-company-name",
+      "element": "input",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-primary-color",
+      "element": "input",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-accent-color",
+      "element": "input",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-logo-upload",
+      "element": "input",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-logo-name",
+      "element": "p",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-saved",
+      "element": "span",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "branding-save",
+      "element": "button",
+      "component": "app-admin-branding"
+    },
+    {
+      "id": "admin-business",
+      "element": "div",
+      "component": "app-admin-business-shell"
+    },
+    {
+      "id": "admin-contact",
+      "element": "div",
+      "component": "app-admin-contact"
+    },
+    {
+      "id": "contact-email",
+      "element": "input",
+      "component": "app-admin-contact"
+    },
+    {
+      "id": "contact-phone",
+      "element": "input",
+      "component": "app-admin-contact"
+    },
+    {
+      "id": "contact-saved",
+      "element": "span",
+      "component": "app-admin-contact"
+    },
+    {
+      "id": "contact-save",
+      "element": "button",
+      "component": "app-admin-contact"
+    },
+    {
+      "id": "admin-machine",
+      "element": "div",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-min-qty",
+      "element": "input",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-max-qty",
+      "element": "input",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-qty-error",
+      "element": "p",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-upload-size",
+      "element": "input",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-extensions",
+      "element": "input",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-saved",
+      "element": "span",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "machine-save",
+      "element": "button",
+      "component": "app-admin-machine"
+    },
+    {
+      "id": "admin-materials",
+      "element": "div",
+      "component": "app-admin-materials"
+    },
+    {
+      "id": "material-add",
+      "element": "a",
+      "component": "app-admin-materials"
+    },
+    {
+      "id": "material-modal",
+      "element": "div",
+      "component": "app-admin-materials"
+    },
+    {
+      "id": "material-name-input",
+      "element": "input",
+      "component": "app-admin-materials"
+    },
+    {
+      "id": "material-save",
+      "element": "a",
+      "component": "app-admin-materials"
+    },
+    {
+      "id": "admin-payments",
+      "element": "div",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-sandbox-notice",
+      "element": "div",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-sandbox-toggle",
+      "element": "input",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-publishable-key",
+      "element": "input",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-secret-key",
+      "element": "input",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-webhook-secret",
+      "element": "input",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-probing",
+      "element": "p",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-probe-ok",
+      "element": "div",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-probe-fail",
+      "element": "div",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "payments-save",
+      "element": "button",
+      "component": "app-admin-payments"
+    },
+    {
+      "id": "admin-pricing",
+      "element": "div",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-dirty",
+      "element": "span",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-setup-fee",
+      "element": "input",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-per-foot",
+      "element": "input",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-per-sheet",
+      "element": "input",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-per-bend",
+      "element": "input",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-minimum",
+      "element": "input",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-saved",
+      "element": "span",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "pricing-save",
+      "element": "button",
+      "component": "app-admin-pricing"
+    },
+    {
+      "id": "admin-settings",
+      "element": "div",
+      "component": "app-admin-settings"
+    },
+    {
+      "id": "settings-banner",
+      "element": "div",
+      "component": "app-admin-settings"
+    },
+    {
+      "id": "settings-all-configured",
+      "element": "div",
+      "component": "app-admin-settings"
+    },
+    {
+      "id": "admin-shipping",
+      "element": "div",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "shipping-add",
+      "element": "a",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "shipping-none-active",
+      "element": "div",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "shipping-modal",
+      "element": "div",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "shipping-name-input",
+      "element": "input",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "shipping-rate-input",
+      "element": "input",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "shipping-save",
+      "element": "a",
+      "component": "app-admin-shipping-methods"
+    },
+    {
+      "id": "login-error",
+      "element": "div",
+      "component": "app-login"
+    },
+    {
+      "id": "login-email",
+      "element": "input",
+      "component": "app-login"
+    },
+    {
+      "id": "login-password",
+      "element": "input",
+      "component": "app-login"
+    },
+    {
+      "id": "login-submit",
+      "element": "button",
+      "component": "app-login"
+    },
+    {
+      "id": "login-to-signup",
+      "element": "a",
+      "component": "app-login"
+    },
+    {
+      "id": "signup-error",
+      "element": "div",
+      "component": "app-signup"
+    },
+    {
+      "id": "signup-name",
+      "element": "input",
+      "component": "app-signup"
+    },
+    {
+      "id": "signup-email",
+      "element": "input",
+      "component": "app-signup"
+    },
+    {
+      "id": "signup-password",
+      "element": "input",
+      "component": "app-signup"
+    },
+    {
+      "id": "signup-confirm",
+      "element": "input",
+      "component": "app-signup"
+    },
+    {
+      "id": "signup-submit",
+      "element": "button",
+      "component": "app-signup"
+    },
+    {
+      "id": "signup-to-login",
+      "element": "a",
+      "component": "app-signup"
+    },
+    {
+      "id": "checkout-shell",
+      "element": "section",
+      "component": "app-checkout-shell"
+    },
+    {
+      "id": "checkout-payment",
+      "element": "div",
+      "component": "app-payment-return"
+    },
+    {
+      "id": "payment-pending",
+      "element": "div",
+      "component": "app-payment-return"
+    },
+    {
+      "id": "payment-confirmed",
+      "element": "div",
+      "component": "app-payment-return"
+    },
+    {
+      "id": "payment-to-confirmation",
+      "element": "a",
+      "component": "app-payment-return"
+    },
+    {
+      "id": "payment-timeout",
+      "element": "div",
+      "component": "app-payment-return"
+    },
+    {
+      "id": "checkout-review",
+      "element": "div",
+      "component": "app-review-step"
+    },
+    {
+      "id": "checkout-cancelled",
+      "element": "div",
+      "component": "app-review-step"
+    },
+    {
+      "id": "review-summary",
+      "element": "dl",
+      "component": "app-review-step"
+    },
+    {
+      "id": "review-total",
+      "element": "span",
+      "component": "app-review-step"
+    },
+    {
+      "id": "review-continue",
+      "element": "a",
+      "component": "app-review-step"
+    },
+    {
+      "id": "checkout-shipping",
+      "element": "div",
+      "component": "app-shipping-step"
+    },
+    {
+      "id": "no-shipping-methods",
+      "element": "div",
+      "component": "app-shipping-step"
+    },
+    {
+      "id": "shipping-address",
+      "element": "address",
+      "component": "app-shipping-step"
+    },
+    {
+      "id": "shipping-grand-total",
+      "element": "span",
+      "component": "app-shipping-step"
+    },
+    {
+      "id": "shipping-pay",
+      "element": "button",
+      "component": "app-shipping-step"
+    },
+    {
+      "id": "order-confirmation",
+      "element": "section",
+      "component": "app-order-confirmation"
+    },
+    {
+      "id": "confirmation-order-number",
+      "element": "p",
+      "component": "app-order-confirmation"
+    },
+    {
+      "id": "confirmation-code",
+      "element": "p",
+      "component": "app-order-confirmation"
+    },
+    {
+      "id": "email-failed",
+      "element": "div",
+      "component": "app-order-confirmation"
+    },
+    {
+      "id": "email-sent",
+      "element": "div",
+      "component": "app-order-confirmation"
+    },
+    {
+      "id": "confirmation-new-quote",
+      "element": "a",
+      "component": "app-order-confirmation"
+    },
+    {
+      "id": "order-detail",
+      "element": "section",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "order-receipt",
+      "element": "a",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "order-number",
+      "element": "p",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "confirmation-number",
+      "element": "p",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "order-address",
+      "element": "address",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "estimated-delivery",
+      "element": "dd",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "company-contact",
+      "element": "address",
+      "component": "app-order-detail"
+    },
+    {
+      "id": "orders-list",
+      "element": "section",
+      "component": "app-order-list"
+    },
+    {
+      "id": "orders-empty",
+      "element": "div",
+      "component": "app-order-list"
+    },
+    {
+      "id": "orders-next-page",
+      "element": "a",
+      "component": "app-order-list"
+    },
+    {
+      "id": "bends-continue",
+      "element": "button",
+      "component": "app-bends-step"
+    },
+    {
+      "id": "bends-stale-warning",
+      "element": "div",
+      "component": "app-bends-step"
+    },
+    {
+      "id": "bend-add",
+      "element": "button",
+      "component": "app-bends-step"
+    },
+    {
+      "id": "bends-empty",
+      "element": "div",
+      "component": "app-bends-step"
+    },
+    {
+      "id": "bend-editor-canvas",
+      "element": "canvas",
+      "component": "app-bend-editor-canvas"
+    },
+    {
+      "id": "price-breakdown",
+      "element": "div",
+      "component": "app-price-breakdown"
+    },
+    {
+      "id": "minimum-applied",
+      "element": "div",
+      "component": "app-price-breakdown"
+    },
+    {
+      "id": "breakdown-total",
+      "element": "span",
+      "component": "app-price-breakdown"
+    },
+    {
+      "id": "work-bed",
+      "element": "figure",
+      "component": "app-work-bed-canvas"
+    },
+    {
+      "id": "work-bed-progress",
+      "element": "span",
+      "component": "app-work-bed-canvas"
+    },
+    {
+      "id": "print-bed-toggle",
+      "element": "button",
+      "component": "app-work-bed-canvas"
+    },
+    {
+      "id": "material-select",
+      "element": "select",
+      "component": "app-material-step"
+    },
+    {
+      "id": "quantity-input",
+      "element": "input",
+      "component": "app-material-step"
+    },
+    {
+      "id": "quantity-error",
+      "element": "p",
+      "component": "app-material-step"
+    },
+    {
+      "id": "part-too-large",
+      "element": "div",
+      "component": "app-material-step"
+    },
+    {
+      "id": "material-continue",
+      "element": "button",
+      "component": "app-material-step"
+    },
+    {
+      "id": "units-guard",
+      "element": "div",
+      "component": "app-material-step"
+    },
+    {
+      "id": "sheet-preview",
+      "element": "dl",
+      "component": "app-material-step"
+    },
+    {
+      "id": "sheet-count",
+      "element": "dd",
+      "component": "app-material-step"
+    },
+    {
+      "id": "new-quote-shell",
+      "element": "section",
+      "component": "app-new-quote-shell"
+    },
+    {
+      "id": "wizard-steps",
+      "element": "ol",
+      "component": "app-new-quote-shell"
+    },
+    {
+      "id": "quote-detail",
+      "element": "section",
+      "component": "app-quote-detail"
+    },
+    {
+      "id": "toggle-breakdown",
+      "element": "a",
+      "component": "app-quote-detail"
+    },
+    {
+      "id": "quote-checkout",
+      "element": "a",
+      "component": "app-quote-detail"
+    },
+    {
+      "id": "snapshot-notice",
+      "element": "div",
+      "component": "app-quote-detail"
+    },
+    {
+      "id": "breakdown-panel",
+      "element": "div",
+      "component": "app-quote-detail"
+    },
+    {
+      "id": "quote-reorder",
+      "element": "a",
+      "component": "app-quote-detail"
+    },
+    {
+      "id": "quotes-list",
+      "element": "section",
+      "component": "app-quote-list"
+    },
+    {
+      "id": "quotes-new",
+      "element": "a",
+      "component": "app-quote-list"
+    },
+    {
+      "id": "quotes-empty",
+      "element": "div",
+      "component": "app-quote-list"
+    },
+    {
+      "id": "quotes-next-page",
+      "element": "a",
+      "component": "app-quote-list"
+    },
+    {
+      "id": "quote-recalculated",
+      "element": "span",
+      "component": "app-result-step"
+    },
+    {
+      "id": "quote-total",
+      "element": "div",
+      "component": "app-result-step"
+    },
+    {
+      "id": "proceed-to-checkout",
+      "element": "button",
+      "component": "app-result-step"
+    },
+    {
+      "id": "job-summary",
+      "element": "dl",
+      "component": "app-result-step"
+    },
+    {
+      "id": "upload-dropzone",
+      "element": "div",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "upload-input",
+      "element": "input",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "upload-progress",
+      "element": "div",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "upload-error",
+      "element": "div",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "upload-filename",
+      "element": "h2",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "upload-replace",
+      "element": "button",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "detected-units",
+      "element": "dd",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "part-dimensions",
+      "element": "dd",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "skipped-entities",
+      "element": "div",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "upload-continue",
+      "element": "button",
+      "component": "app-upload-step"
+    },
+    {
+      "id": "forbidden",
+      "element": "section",
+      "component": "app-forbidden"
+    },
+    {
+      "id": "not-found",
+      "element": "section",
+      "component": "app-not-found"
+    }
   ]
 }

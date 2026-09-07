@@ -1,0 +1,23 @@
+<figure class="workbed" data-testid="work-bed">
+  <div class="workbed-frame" #frame>
+    <canvas #staticLayer class="layer" aria-hidden="true"></canvas>
+    <canvas #cutLayer class="layer" aria-hidden="true"></canvas>
+    <canvas #activeLayer class="layer" aria-hidden="true"></canvas>
+  </div>
+
+  <figcaption class="workbed-bar">
+    <div class="workbed-meta">
+      <span class="mono xsmall">{{ caption() }}</span>
+      <span class="legend">
+        <span class="swatch swatch-cut" aria-hidden="true"></span> Cut
+        <span class="swatch swatch-bend" aria-hidden="true"></span> Bend
+      </span>
+    </div>
+    <div class="workbed-controls">
+      <span class="mono xsmall progress" data-testid="work-bed-progress">{{ progressPct() }}%</span>
+      <button type="button" class="btn btn-sm btn-secondary" (click)="toggle()" data-testid="print-bed-toggle">
+        {{ running() ? 'Stop' : 'Print Bed' }}
+      </button>
+    </div>
+  </figcaption>
+</figure>

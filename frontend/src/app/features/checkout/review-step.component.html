@@ -1,0 +1,36 @@
+<div class="stack" data-testid="checkout-review">
+  @if (cancelled()) {
+    <div class="alert alert-warn" role="status" data-testid="checkout-cancelled">
+      <div>
+        <p class="strong mb-0">Payment cancelled</p>
+        <p class="small mb-0">You weren’t charged and your quote is untouched. Pick up where you left off.</p>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="card-head"><h2>Review your order</h2></div>
+    <div class="card-body">
+      <dl class="kv" data-testid="review-summary">
+        <dt>Drawing</dt><dd class="ellipsis">{{ drawing()?.filename }}</dd>
+        <dt>Material</dt><dd>{{ material().name }} {{ material().thicknessMm }} mm</dd>
+        <dt>Quantity</dt><dd>{{ draft.quantity() }} parts</dd>
+        <dt>Bends per part</dt><dd>{{ draft.bends().length }}</dd>
+        <dt>Sheets</dt><dd>{{ nesting()?.sheetCount }}</dd>
+      </dl>
+
+      <hr />
+
+      <div class="line-total">
+        <span>Parts total</span>
+        <span class="mono strong" data-testid="review-total">{{ money(breakdown()?.totalCents ?? 0) }}</span>
+      </div>
+      <p class="xsmall muted mb-0">Shipping is added on the next step.</p>
+    </div>
+    <div class="card-foot step-actions">
+      <a [routerLink]="['/quotes', quoteId()]" class="btn btn-secondary">← Back to quote</a>
+      <a [routerLink]="['/checkout', quoteId(), 'shipping']" class="btn btn-primary btn-lg"
+         data-testid="review-continue">Choose shipping →</a>
+    </div>
+  </div>
+</div>

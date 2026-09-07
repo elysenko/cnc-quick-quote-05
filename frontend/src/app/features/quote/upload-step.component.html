@@ -1,0 +1,96 @@
+<div class="split">
+  <div class="stack">
+    @if (!drawing()) {
+      <div
+        class="dropzone"
+        [class.dragging]="dragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDrop($event)"
+        data-testid="upload-dropzone"
+      >
+        <span class="drop-icon" aria-hidden="true">⬒</span>
+        <h2>Drop your DXF here</h2>
+        <p class="muted small">Accepted: {{ extensions() }} · up to {{ maxMb() }} MB</p>
+
+        <label class="btn btn-primary" for="dxf-input">Choose a file</label>
+        <input id="dxf-input" type="file" class="sr-only" [accept]="extensions()" (change)="onPick($event)"
+               data-testid="upload-input" />
+
+        @if (uploading()) {
+          <div class="progress-wrap" data-testid="upload-progress">
+            <div class="progress-bar"><span [style.width.%]="progress()"></span></div>
+            <p class="xsmall muted mb-0">Uploading and parsing… {{ progress() }}%</p>
+          </div>
+        }
+      </div>
+
+      @if (error()) {
+        <div class="alert alert-danger" role="alert" data-testid="upload-error">
+          <p>{{ error() }}</p>
+        </div>
+      }
+    } @else {
+      <div class="card">
+        <div class="card-head">
+          <h2 data-testid="upload-filename">{{ drawing()!.filename }}</h2>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="replace()" data-testid="upload-replace">
+            Replace
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-ok mb-4">
+            <p><strong>Drawing parsed.</strong> {{ drawing()!.entityCount }} supported entities found.</p>
+          </div>
+
+          <dl class="kv">
+            <dt>Detected units</dt>
+            <dd data-testid="detected-units">{{ drawing()!.detectedUnits }}</dd>
+            <dt>Part dimensions</dt>
+            <dd data-testid="part-dimensions">{{ drawing()!.bboxWMm }} × {{ drawing()!.bboxHMm }} mm</dd>
+            <dt>Cut length (per part)</dt>
+            <dd>{{ drawing()!.cutLengthMm }} mm</dd>
+            <dt>File size</dt>
+            <dd>{{ (drawing()!.sizeBytes / 1024).toFixed(0) }} KB</dd>
+          </dl>
+
+          @if (drawing()!.skippedEntities.length > 0) {
+            <div class="alert alert-warn mt-4" data-testid="skipped-entities">
+              <div>
+                <p class="strong mb-0">Some entities were ignored</p>
+                <p class="small mb-0">
+                  These are not cut and are excluded from the price. Check that nothing you need is missing.
+                </p>
+                <ul class="skipped mt-2">
+                  @for (entity of drawing()!.skippedEntities; track entity) {
+                    <li class="xsmall mono">{{ entity }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="card-foot row-between">
+          <a routerLink="/quotes" class="btn btn-secondary">Back to quotes</a>
+          <button type="button" class="btn btn-primary" (click)="next()" data-testid="upload-continue">
+            Continue to bends →
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <aside class="card card-pad">
+    <h3>What we read from your file</h3>
+    <p class="small muted">
+      We flatten every LINE, ARC, CIRCLE, LWPOLYLINE and POLYLINE to measure the true cut path, then take
+      the bounding box for nesting.
+    </p>
+    <hr />
+    <h4 class="small">Unsupported content</h4>
+    <p class="small muted mb-0">
+      Splines, text, dimensions and 3D geometry are reported and skipped rather than silently priced. If a
+      file contains no supported entities at all we reject it instead of quoting zero.
+    </p>
+  </aside>
+</div>

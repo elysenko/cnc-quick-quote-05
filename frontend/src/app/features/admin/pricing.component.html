@@ -1,0 +1,58 @@
+<div class="card" data-testid="admin-pricing">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Pricing variables</h2>
+      <p class="xsmall muted mb-0">Quotes already issued keep the price they were given.</p>
+    </div>
+    @if (dirty()) { <span class="dirty-note" data-testid="pricing-dirty">Unsaved changes</span> }
+  </div>
+
+  <div class="card-body">
+    <div class="admin-form">
+      <div class="field">
+        <label for="p-setup">Setup fee ($)</label>
+        <input id="p-setup" type="number" step="0.01" min="0" [ngModel]="form().setupFee" name="setupFee"
+               (ngModelChange)="patch('setupFee', $event)" data-testid="pricing-setup-fee" />
+        <p class="hint">Charged once per job.</p>
+      </div>
+      <div class="field">
+        <label for="p-cut">Cost per linear foot ($)</label>
+        <input id="p-cut" type="number" step="0.01" min="0" [ngModel]="form().costPerLinearFoot"
+               name="costPerLinearFoot" (ngModelChange)="patch('costPerLinearFoot', $event)"
+               data-testid="pricing-per-foot" />
+        <p class="hint">Cutting labour. Never multiplied by material.</p>
+      </div>
+      <div class="field">
+        <label for="p-sheet">Cost per sheet ($)</label>
+        <input id="p-sheet" type="number" step="0.01" min="0" [ngModel]="form().perSheetCost" name="perSheetCost"
+               (ngModelChange)="patch('perSheetCost', $event)" data-testid="pricing-per-sheet" />
+        <p class="hint">Multiplied by the material’s cost multiplier.</p>
+      </div>
+      <div class="field">
+        <label for="p-handling">Handling fee ($)</label>
+        <input id="p-handling" type="number" step="0.01" min="0" [ngModel]="form().handlingFee" name="handlingFee"
+               (ngModelChange)="patch('handlingFee', $event)" />
+      </div>
+      <div class="field">
+        <label for="p-bend">Cost per bend ($)</label>
+        <input id="p-bend" type="number" step="0.01" min="0" [ngModel]="form().costPerBend" name="costPerBend"
+               (ngModelChange)="patch('costPerBend', $event)" data-testid="pricing-per-bend" />
+      </div>
+      <div class="field">
+        <label for="p-min">Minimum order ($)</label>
+        <input id="p-min" type="number" step="0.01" min="0" [ngModel]="form().minimumOrder" name="minimumOrder"
+               (ngModelChange)="patch('minimumOrder', $event)" data-testid="pricing-minimum" />
+        <p class="hint">Charged instead of the subtotal when the job falls below it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-foot save-bar">
+    @if (saved()) { <span class="badge badge-ok" data-testid="pricing-saved">Saved</span> }
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-secondary" [disabled]="!dirty()" (click)="reset()">Discard</button>
+    <button type="button" class="btn btn-primary" [disabled]="!dirty()" (click)="save()" data-testid="pricing-save">
+      Save pricing
+    </button>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+<div class="stack" data-testid="checkout-shipping">
+  @if (blocked()) {
+    <div class="alert alert-danger" role="alert" data-testid="no-shipping-methods">
+      <div>
+        <p class="strong mb-0">We can’t price shipping right now</p>
+        <p class="small mb-0">
+          No delivery methods are currently available, so this order can’t be completed online. Please
+          contact {{ branding.companyName() }} on
+          <a [href]="'mailto:' + branding.business().supportEmail">{{ branding.business().supportEmail }}</a>
+          or {{ branding.business().phone }} and we’ll arrange it directly.
+        </p>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="card-head"><h2>Delivery method</h2></div>
+
+    @if (!blocked()) {
+      <div class="method-list">
+        @for (method of methods(); track method.id) {
+          <button type="button" class="method" [class.on]="method.id === checkout.selectedMethodId()"
+                  (click)="select(method.id)" [attr.data-testid]="'shipping-method-' + method.id">
+            <span class="method-radio" aria-hidden="true"></span>
+            <span class="method-main">
+              <span class="method-name">{{ method.name }}</span>
+              <span class="xsmall muted">
+                Estimated {{ method.estDays }} working day{{ method.estDays === 1 ? '' : 's' }}
+                @if (method.kind === 'per_sheet') {
+                  · {{ money(method.rate * 100) }} × {{ draft.nesting()?.sheetCount }} sheets
+                }
+              </span>
+            </span>
+            <span class="method-cost mono">
+              {{ method.resolvedCostCents === 0 ? 'Free' : money(method.resolvedCostCents) }}
+            </span>
+          </button>
+        }
+      </div>
+    }
+
+    <div class="card-body">
+      <h3 class="small">Delivering to</h3>
+      <address class="small muted" data-testid="shipping-address">
+        {{ checkout.address().name }}<br />
+        {{ checkout.address().line1 }}@if (checkout.address().line2) {, {{ checkout.address().line2 }}}<br />
+        {{ checkout.address().city }}, {{ checkout.address().region }} {{ checkout.address().postcode }}<br />
+        {{ checkout.address().country }}
+      </address>
+      <p class="xsmall muted">You can confirm or change this address on the payment page.</p>
+
+      <hr />
+
+      <div class="line-total"><span>Parts</span><span class="mono">{{ money(partsCents()) }}</span></div>
+      <div class="line-total"><span>Shipping</span><span class="mono">{{ money(selectedCostCents()) }}</span></div>
+      <div class="grand mt-3">
+        <span>Total</span>
+        <span class="mono" data-testid="shipping-grand-total">{{ money(grandTotalCents()) }}</span>
+      </div>
+    </div>
+
+    <div class="card-foot step-actions">
+      <a [routerLink]="['/checkout', quoteId(), 'review']" class="btn btn-secondary">← Back</a>
+      <button type="button" class="btn btn-primary btn-lg" [disabled]="blocked()" (click)="pay()"
+              data-testid="shipping-pay">
+        Pay {{ money(grandTotalCents()) }} →
+      </button>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-ghost btn-sm preview-toggle" (click)="checkout.toggleNoMethods()">
+    {{ blocked() ? 'Restore delivery methods' : 'Preview: no delivery methods available' }}
+  </button>
+</div>

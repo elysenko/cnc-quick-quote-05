@@ -1,0 +1,67 @@
+<div data-testid="app-ready" class="app-root">
+  @if (chromeless()) {
+    <router-outlet />
+  } @else {
+    <header class="app-header">
+      <a routerLink="/quotes" class="brand" (click)="closeMenu()">
+        <span class="brand-mark" aria-hidden="true">{{ branding.initials() }}</span>
+        <span class="brand-name">{{ branding.companyName() }}</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Primary">
+        @for (item of navItems(); track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }"
+            >{{ item.label }}</a
+          >
+        }
+      </nav>
+
+      <div class="header-actions">
+        <a routerLink="/quotes/new/upload" class="btn btn-primary btn-sm new-quote">
+          <span aria-hidden="true">+</span> New quote
+        </a>
+        <button type="button" class="btn btn-ghost btn-sm sign-out" (click)="signOut()">Sign out</button>
+        <button
+          type="button"
+          class="menu-toggle"
+          [attr.aria-expanded]="menuOpen()"
+          aria-label="Open menu"
+          (click)="toggleMenu()"
+        >
+          ☰
+        </button>
+      </div>
+    </header>
+
+    @if (menuOpen()) {
+      <div class="drawer-scrim" (click)="closeMenu()"></div>
+      <nav class="drawer" aria-label="Menu">
+        <p class="drawer-user small muted">Signed in as {{ auth.displayName() }}</p>
+        @for (item of navItems(); track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="active" (click)="closeMenu()">
+            <span class="drawer-icon" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}
+          </a>
+        }
+        <button type="button" class="drawer-signout" (click)="signOut()">Sign out</button>
+      </nav>
+    }
+
+    <main class="app-main"><router-outlet /></main>
+
+    <nav class="tabbar" aria-label="Primary mobile">
+      @for (item of navItems(); track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active">
+          <span class="tab-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="tab-label">{{ item.short }}</span>
+        </a>
+      }
+      <a routerLink="/quotes/new/upload" routerLinkActive="active" class="tab-cta">
+        <span class="tab-icon" aria-hidden="true">+</span>
+        <span class="tab-label">New</span>
+      </a>
+    </nav>
+  }
+</div>

@@ -1,0 +1,64 @@
+<div class="card" data-testid="admin-machine">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Machine limits</h2>
+      <p class="xsmall muted mb-0">Bed spacing, upload rules and order quantity bounds.</p>
+    </div>
+    @if (dirty()) { <span class="dirty-note">Unsaved changes</span> }
+  </div>
+
+  <div class="card-body">
+    <div class="admin-form">
+      <div class="field">
+        <label for="m-min">Minimum quantity</label>
+        <input id="m-min" type="number" min="1" step="1" [ngModel]="form().minQuantity" name="minQuantity"
+               (ngModelChange)="patch('minQuantity', $event)" data-testid="machine-min-qty" />
+      </div>
+      <div class="field">
+        <label for="m-max">Maximum quantity</label>
+        <input id="m-max" type="number" min="1" step="1" [ngModel]="form().maxQuantity" name="maxQuantity"
+               (ngModelChange)="patch('maxQuantity', $event)" data-testid="machine-max-qty" />
+      </div>
+      @if (quantityError()) {
+        <p class="field-error full" data-testid="machine-qty-error">{{ quantityError() }}</p>
+      }
+      <div class="field">
+        <label for="m-spacing">Part spacing (mm)</label>
+        <input id="m-spacing" type="number" min="0" step="0.5" [ngModel]="form().sheetSpacingMm" name="spacing"
+               (ngModelChange)="patch('sheetSpacingMm', $event)" />
+        <p class="hint">Gap between nested parts.</p>
+      </div>
+      <div class="field">
+        <label for="m-margin">Sheet margin (mm)</label>
+        <input id="m-margin" type="number" min="0" step="0.5" [ngModel]="form().sheetMarginMm" name="margin"
+               (ngModelChange)="patch('sheetMarginMm', $event)" />
+        <p class="hint">Unusable edge on all four sides.</p>
+      </div>
+      <div class="field">
+        <label for="m-upload">Maximum upload size (MB)</label>
+        <input id="m-upload" type="number" min="1" step="1" [ngModel]="maxUploadMb()" name="uploadMb"
+               (ngModelChange)="setUploadMb($event)" data-testid="machine-upload-size" />
+      </div>
+      <div class="field">
+        <label for="m-ext">Allowed file extensions</label>
+        <input id="m-ext" type="text" [ngModel]="extensionText()" name="extensions"
+               (ngModelChange)="setExtensions($event)" placeholder=".dxf" data-testid="machine-extensions" />
+        <p class="hint">Comma-separated, including the dot.</p>
+      </div>
+      <div class="field">
+        <label for="m-speed">Animation speed (mm/s)</label>
+        <input id="m-speed" type="number" min="10" step="10" [ngModel]="form().animationSpeed" name="animationSpeed"
+               (ngModelChange)="patch('animationSpeed', $event)" />
+        <p class="hint">How fast the work-bed laser traverses the cut path.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-foot save-bar">
+    @if (saved()) { <span class="badge badge-ok" data-testid="machine-saved">Saved</span> }
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-secondary" [disabled]="!dirty()" (click)="reset()">Discard</button>
+    <button type="button" class="btn btn-primary" [disabled]="!dirty() || !!quantityError()" (click)="save()"
+            data-testid="machine-save">Save limits</button>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<section class="page" data-testid="admin-shell">
+  <div class="page-head">
+    <div>
+      <h1>Shop settings</h1>
+      <p class="sub">Everything that drives a customer quote. Changes apply to the next quote generated.</p>
+    </div>
+    <span class="badge badge-warn">Administrator</span>
+  </div>
+
+  <nav class="subnav" aria-label="Settings sections">
+    @for (section of sections; track section.path) {
+      <a [routerLink]="section.path" routerLinkActive="active"
+         [attr.data-testid]="'admin-nav-' + section.label.toLowerCase()">{{ section.label }}</a>
+    }
+  </nav>
+
+  <router-outlet />
+</section>

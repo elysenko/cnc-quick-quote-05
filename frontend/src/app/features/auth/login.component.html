@@ -1,0 +1,82 @@
+<div class="auth-page">
+  <div class="auth-panel">
+    <a class="auth-brand" href="#" (click)="$event.preventDefault()">
+      <span class="auth-mark" aria-hidden="true">{{ branding.initials() }}</span>
+      <span>{{ branding.companyName() }}</span>
+    </a>
+
+    <h1>Sign in</h1>
+    <p class="muted">Get an instant price on laser-cut and folded parts.</p>
+
+    @if (formError()) {
+      <div class="alert alert-danger mb-4" role="alert" data-testid="login-error">
+        <p>{{ formError() }}</p>
+      </div>
+    }
+
+    <form class="stack" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="login-email">Email address</label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          inputmode="email"
+          placeholder="you@company.com"
+          [(ngModel)]="email"
+          [class.invalid]="!!errors()['email']"
+          data-testid="login-email"
+        />
+        @if (errors()['email']) {
+          <p class="field-error">{{ errors()['email'] }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="login-password">Password</label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+          [class.invalid]="!!errors()['password']"
+          data-testid="login-password"
+        />
+        @if (errors()['password']) {
+          <p class="field-error">{{ errors()['password'] }}</p>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="submitting()" data-testid="login-submit">
+        @if (submitting()) {
+          <span class="spinner" aria-hidden="true"></span> Signing in…
+        } @else {
+          Sign in
+        }
+      </button>
+
+      @if (previewShortcut) {
+        <button type="button" class="btn btn-ghost btn-block preview-shortcut" (click)="useShortcut()">
+          {{ previewShortcut }}
+        </button>
+      }
+    </form>
+
+    <p class="auth-alt small">
+      Don’t have an account? <a routerLink="/signup" data-testid="login-to-signup">Create one</a>
+    </p>
+  </div>
+
+  <aside class="auth-aside" aria-hidden="true">
+    <h2>From drawing to price in four steps</h2>
+    <ol class="auth-steps">
+      <li><span>1</span> Upload your DXF</li>
+      <li><span>2</span> Mark your bend lines</li>
+      <li><span>3</span> Pick material and quantity</li>
+      <li><span>4</span> See the itemised price</li>
+    </ol>
+    <p class="auth-note">Quotes are locked at the price shown — later price-list changes never alter them.</p>
+  </aside>
+</div>

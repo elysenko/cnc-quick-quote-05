@@ -1,0 +1,17 @@
+<div class="bend-editor">
+  <div class="bend-frame" #frame>
+    <canvas
+      #canvas
+      tabindex="0"
+      role="application"
+      aria-label="Bend line editor. Drag across the part to draw a bend line. Press Delete to remove the selected bend."
+      data-testid="bend-editor-canvas"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointercancel)="onPointerUp($event)"
+      (keydown)="onKeyDown($event)"
+    ></canvas>
+  </div>
+  <p class="bend-hint xsmall">{{ hint() }}</p>
+</div>

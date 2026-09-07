@@ -1,0 +1,14 @@
+.back-link { color: var(--ink-500); font-weight: 600; display: inline-flex; min-height: 32px; align-items: center; }
+.secure { text-transform: none; }
+.checkout-steps { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--sp-2); margin-bottom: var(--sp-5); }
+.checkout-steps a {
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  min-height: 48px; padding: 0 var(--sp-2); border-radius: var(--radius-sm);
+  border: 1px solid var(--ink-200); background: var(--surface);
+  color: var(--ink-500); font-size: var(--fs-sm); font-weight: 600;
+}
+.checkout-steps a:hover { text-decoration: none; }
+.dot { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; background: var(--ink-100); font-size: var(--fs-xs); font-weight: 700; }
+.checkout-steps li.active a { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--brand-primary-light); }
+.checkout-steps li.active .dot { background: var(--brand-primary); color: #fff; }
+.checkout-steps li.done .dot { background: var(--ok-100); color: var(--ok-600); }

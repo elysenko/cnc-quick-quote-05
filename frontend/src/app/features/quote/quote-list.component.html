@@ -1,0 +1,71 @@
+<section class="page" data-testid="quotes-list">
+  <div class="page-head">
+    <div>
+      <h1>My quotes</h1>
+      <p class="sub">{{ resultCount() }} quote{{ resultCount() === 1 ? '' : 's' }}</p>
+    </div>
+    <a routerLink="/quotes/new/upload" class="btn btn-primary" data-testid="quotes-new">+ New quote</a>
+  </div>
+
+  <div class="toolbar">
+    <div class="filters" role="group" aria-label="Filter by status">
+      @for (filter of statusFilters; track filter.value) {
+        <a
+          routerLink="/quotes"
+          [queryParams]="queryFor({ status: filter.value, page: '1' })"
+          [class.on]="activeStatus() === filter.value"
+          [attr.data-testid]="'quotes-filter-' + filter.value"
+          >{{ filter.label }}</a
+        >
+      }
+    </div>
+    <div class="sorts small muted">
+      <span class="nowrap">Sort:</span>
+      <a routerLink="/quotes" [queryParams]="queryFor({ sort: 'newest' })" [class.on]="activeSort() === 'newest'">Newest</a>
+      <a routerLink="/quotes" [queryParams]="queryFor({ sort: 'oldest' })" [class.on]="activeSort() === 'oldest'">Oldest</a>
+      <a routerLink="/quotes" [queryParams]="queryFor({ sort: 'total' })" [class.on]="activeSort() === 'total'">Value</a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="card card-pad loading"><span class="spinner"></span> Loading quotes…</div>
+  } @else if (visible().length === 0) {
+    <div class="card card-pad state" data-testid="quotes-empty">
+      <span class="state-icon" aria-hidden="true">⬡</span>
+      <h3>No quotes here yet</h3>
+      <p class="muted">Upload a DXF drawing and we’ll price it straight away.</p>
+      <a routerLink="/quotes/new/upload" class="btn btn-primary mt-4">Start a quote</a>
+    </div>
+  } @else {
+    <div class="card quote-cards">
+      @for (quote of visible(); track quote.id) {
+        <a class="list-row quote-row" [routerLink]="['/quotes', quote.id]" [attr.data-testid]="'quote-row-' + quote.id">
+          <span class="q-main">
+            <span class="q-name">{{ quote.drawingName }}</span>
+            <span class="q-meta xsmall muted mono">
+              {{ quote.reference }} · {{ quote.materialName }} · ×{{ quote.quantity }}
+            </span>
+          </span>
+          <span class="q-sheets xsmall muted nowrap">{{ quote.sheetCount }} sheet{{ quote.sheetCount === 1 ? '' : 's' }}</span>
+          <span [class]="badgeClass(quote.status)">{{ quote.status }}</span>
+          <span class="q-total mono">{{ money(quote.totalCents) }}</span>
+          <span class="q-chevron" aria-hidden="true">›</span>
+        </a>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <nav class="pager" aria-label="Pagination">
+        @if (currentPage() > 1) {
+          <a routerLink="/quotes" [queryParams]="queryFor({ page: (currentPage() - 1).toString() })"
+             class="btn btn-secondary btn-sm">← Previous</a>
+        }
+        <span class="small muted">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        @if (currentPage() < totalPages()) {
+          <a routerLink="/quotes" [queryParams]="queryFor({ page: (currentPage() + 1).toString() })"
+             class="btn btn-secondary btn-sm" data-testid="quotes-next-page">Next →</a>
+        }
+      </nav>
+    }
+  }
+</section>

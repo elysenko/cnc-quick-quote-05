@@ -1,0 +1,15 @@
+.workbed { margin: 0; border-radius: var(--radius); overflow: hidden; background: var(--machine-bed); border: 1px solid var(--ink-800); }
+.workbed-frame { position: relative; width: 100%; line-height: 0; }
+.layer { position: absolute; inset: 0; display: block; }
+.layer:first-child { position: relative; }
+.workbed-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-3); background: var(--ink-800); color: var(--ink-300);
+}
+.workbed-meta { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+.legend { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); }
+.swatch { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-left: var(--sp-2); }
+.swatch-cut { background: var(--machine-cut); }
+.swatch-bend { background: var(--machine-bend); }
+.workbed-controls { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; }
+.progress { min-width: 3.2em; text-align: right; color: var(--ink-400); }

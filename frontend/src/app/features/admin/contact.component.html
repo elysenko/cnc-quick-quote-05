@@ -1,0 +1,61 @@
+<div class="card" data-testid="admin-contact">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Contact details</h2>
+      <p class="xsmall muted mb-0">Shown on order confirmations, receipts and the checkout blocking notice.</p>
+    </div>
+    @if (dirty()) { <span class="dirty-note">Unsaved changes</span> }
+  </div>
+
+  <div class="card-body">
+    <div class="admin-form">
+      <div class="field">
+        <label for="c-email">Support email</label>
+        <input id="c-email" type="email" inputmode="email" [ngModel]="form().supportEmail" name="supportEmail"
+               (ngModelChange)="patch('supportEmail', $event)" data-testid="contact-email" />
+      </div>
+      <div class="field">
+        <label for="c-phone">Phone</label>
+        <input id="c-phone" type="tel" inputmode="tel" [ngModel]="form().phone" name="phone"
+               (ngModelChange)="patch('phone', $event)" data-testid="contact-phone" />
+      </div>
+      <div class="field full">
+        <label for="c-line1">Address line 1</label>
+        <input id="c-line1" type="text" [ngModel]="form().addressLine1" name="addressLine1"
+               (ngModelChange)="patch('addressLine1', $event)" />
+      </div>
+      <div class="field full">
+        <label for="c-line2">Address line 2</label>
+        <input id="c-line2" type="text" [ngModel]="form().addressLine2" name="addressLine2"
+               (ngModelChange)="patch('addressLine2', $event)" />
+      </div>
+      <div class="field">
+        <label for="c-city">City</label>
+        <input id="c-city" type="text" [ngModel]="form().city" name="city"
+               (ngModelChange)="patch('city', $event)" />
+      </div>
+      <div class="field">
+        <label for="c-region">State / region</label>
+        <input id="c-region" type="text" [ngModel]="form().region" name="region"
+               (ngModelChange)="patch('region', $event)" />
+      </div>
+      <div class="field">
+        <label for="c-post">Postcode</label>
+        <input id="c-post" type="text" [ngModel]="form().postcode" name="postcode"
+               (ngModelChange)="patch('postcode', $event)" />
+      </div>
+      <div class="field">
+        <label for="c-country">Country</label>
+        <input id="c-country" type="text" [ngModel]="form().country" name="country"
+               (ngModelChange)="patch('country', $event)" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card-foot save-bar">
+    @if (saved()) { <span class="badge badge-ok" data-testid="contact-saved">Saved</span> }
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-primary" [disabled]="!dirty()" (click)="save()"
+            data-testid="contact-save">Save contact details</button>
+  </div>
+</div>

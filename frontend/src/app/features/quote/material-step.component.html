@@ -1,0 +1,90 @@
+@if (drawing(); as dwg) {
+  <div class="split">
+    <div class="card">
+      <div class="card-head"><h2>Material &amp; quantity</h2></div>
+      <div class="card-body stack">
+        <div class="field">
+          <label for="material-select">Material</label>
+          <select id="material-select" [ngModel]="draft.materialId()" name="material"
+                  (ngModelChange)="onMaterialChange($event)" data-testid="material-select">
+            @for (mat of materials(); track mat.id) {
+              <option [value]="mat.id">
+                {{ mat.name }} · {{ mat.thicknessMm }} mm · sheet {{ mat.sheetWMm }} × {{ mat.sheetHMm }} mm
+              </option>
+            }
+          </select>
+          <p class="hint">Only materials currently in stock are listed.</p>
+        </div>
+
+        <div class="field">
+          <label for="quantity-input">Quantity</label>
+          <input id="quantity-input" type="number" inputmode="numeric"
+                 [min]="machine().minQuantity" [max]="machine().maxQuantity"
+                 [ngModel]="quantityInput()" name="quantity"
+                 (ngModelChange)="onQuantityChange($event)"
+                 [class.invalid]="!!quantityError()" data-testid="quantity-input" />
+          <p class="hint">
+            Between {{ machine().minQuantity }} and {{ machine().maxQuantity }} parts.
+          </p>
+          @if (quantityError()) {
+            <p class="field-error" data-testid="quantity-error">{{ quantityError() }}</p>
+          }
+        </div>
+
+        @if (!fitsSheet()) {
+          <div class="alert alert-danger" data-testid="part-too-large">
+            <p>
+              This part is {{ dwg.bboxWMm }} × {{ dwg.bboxHMm }} mm and does not fit on a
+              {{ material().sheetWMm }} × {{ material().sheetHMm }} mm sheet of
+              {{ material().name }}. Choose a material with a larger sheet.
+            </p>
+          </div>
+        }
+      </div>
+      <div class="card-foot row-between">
+        <button type="button" class="btn btn-secondary" (click)="back()">← Back</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canContinue()" (click)="next()"
+                data-testid="material-continue">
+          Calculate price →
+        </button>
+      </div>
+    </div>
+
+    <aside class="stack">
+      <div class="card card-pad units-guard" data-testid="units-guard">
+        <span class="badge badge-info">Check the scale</span>
+        <h3 class="mt-2">{{ dwg.bboxWMm }} × {{ dwg.bboxHMm }} mm</h3>
+        <p class="small muted mb-0">
+          Read from your file as <strong>{{ dwg.detectedUnits }}</strong>. If those dimensions look wrong,
+          your drawing was probably made in different units — fix it before you pay.
+        </p>
+      </div>
+
+      <div class="card card-pad">
+        <h3>Sheet preview</h3>
+        @if (nesting(); as nest) {
+          <dl class="kv" data-testid="sheet-preview">
+            <dt>Parts per sheet</dt>
+            <dd>{{ nest.perSheet }} ({{ nest.cols }} × {{ nest.rows }})</dd>
+            <dt>Sheets required</dt>
+            <dd data-testid="sheet-count">{{ nest.sheetCount }}</dd>
+            <dt>Sheet utilisation</dt>
+            <dd>{{ (nest.utilization * 100).toFixed(1) }}%</dd>
+            <dt>Total cut length</dt>
+            <dd>{{ ((dwg.cutLengthMm * draft.quantity()) / 304.8).toFixed(1) }} ft</dd>
+            <dt>Total bends</dt>
+            <dd>{{ draft.bends().length * draft.quantity() }}</dd>
+          </dl>
+        } @else {
+          <p class="small muted mb-0">Choose a material this part fits on to see the nesting preview.</p>
+        }
+      </div>
+    </aside>
+  </div>
+} @else {
+  <div class="card card-pad state">
+    <h3>No drawing loaded</h3>
+    <p class="muted">Upload a DXF to choose a material.</p>
+    <button type="button" class="btn btn-primary mt-4" (click)="back()">Go back</button>
+  </div>
+}

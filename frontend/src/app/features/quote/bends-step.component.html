@@ -1,0 +1,100 @@
+@if (drawing(); as dwg) {
+  <div class="split">
+    <div class="card">
+      <div class="card-head">
+        <h2>Place your bend lines</h2>
+        <span class="badge badge-accent">{{ bendCount() }} bend{{ bendCount() === 1 ? '' : 's' }}</span>
+      </div>
+      <div class="card-body">
+        <app-bend-editor-canvas
+          [polylines]="dwg.polylines"
+          [bends]="bends()"
+          [partW]="dwg.bboxWMm"
+          [partH]="dwg.bboxHMm"
+          [selectedId]="selectedId()"
+          (bendDrawn)="onDrawn($event)"
+          (bendMoved)="onMoved($event)"
+          (selected)="select($event)"
+          (deleteRequested)="remove($event)"
+        />
+      </div>
+      <div class="card-foot row-between">
+        <button type="button" class="btn btn-secondary" (click)="back()">← Back</button>
+        <button type="button" class="btn btn-primary" (click)="next()" data-testid="bends-continue">
+          Continue to material →
+        </button>
+      </div>
+    </div>
+
+    <aside class="stack">
+      <div class="alert alert-warn" data-testid="bends-stale-warning">
+        <p>
+          Changing bends changes the price. Any quote you already generated is recalculated when you
+          continue.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Bend list</h3>
+          <button type="button" class="btn btn-sm btn-secondary" (click)="addManual()" data-testid="bend-add">
+            Add bend
+          </button>
+        </div>
+
+        @if (bends().length === 0) {
+          <div class="state" data-testid="bends-empty">
+            <span class="state-icon" aria-hidden="true">╱</span>
+            <p class="mb-0">No bends yet. Drag across the part, or use <strong>Add bend</strong>.</p>
+          </div>
+        } @else {
+          <ul class="bend-list">
+            @for (bend of bends(); track bend.id; let i = $index) {
+              <li [class.selected]="bend.id === selectedId()" [attr.data-testid]="'bend-item-' + bend.id">
+                <div class="bend-head">
+                  <button type="button" class="bend-select" (click)="select(bend.id)">
+                    Bend {{ i + 1 }}
+                    <span class="xsmall muted mono">
+                      ({{ bend.sx }}, {{ bend.sy }}) → ({{ bend.ex }}, {{ bend.ey }})
+                    </span>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm danger" (click)="remove(bend.id)"
+                          [attr.aria-label]="'Remove bend ' + (i + 1)">✕</button>
+                </div>
+
+                <div class="bend-controls">
+                  <label class="field angle-field">
+                    <span class="label xsmall">Angle {{ bend.angleDeg }}°</span>
+                    <input type="range" min="0" max="180" step="1" [ngModel]="bend.angleDeg"
+                           (ngModelChange)="setAngle(bend.id, $event)" [name]="'angle-range-' + bend.id"
+                           [attr.aria-label]="'Bend ' + (i + 1) + ' angle in degrees'" />
+                  </label>
+                  <label class="field num-field">
+                    <span class="label xsmall">Degrees</span>
+                    <input type="number" min="0" max="180" [ngModel]="bend.angleDeg"
+                           (ngModelChange)="setAngle(bend.id, $event)" [name]="'angle-num-' + bend.id" />
+                  </label>
+                  <div class="field dir-field">
+                    <span class="label xsmall">Direction</span>
+                    <div class="seg seg-accent">
+                      <button type="button" [class.on]="bend.direction === 'up'"
+                              (click)="setDirection(bend.id, 'up')">Up</button>
+                      <button type="button" [class.on]="bend.direction === 'down'"
+                              (click)="setDirection(bend.id, 'down')">Down</button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </aside>
+  </div>
+} @else {
+  <div class="card card-pad state">
+    <h3>No drawing loaded</h3>
+    <p class="muted">Upload a DXF before placing bends.</p>
+    <button type="button" class="btn btn-primary mt-4" (click)="back()">Go to upload</button>
+  </div>
+}

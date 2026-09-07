@@ -1,0 +1,84 @@
+<section class="page page-narrow" data-testid="order-confirmation">
+  @if (order(); as order) {
+    <div class="card">
+      <div class="success-hero">
+        <span class="success-mark" aria-hidden="true">✓</span>
+        <h1>Thank you — your order is confirmed</h1>
+        <p class="muted">
+          {{ branding.companyName() }} has your job in the queue. Keep your confirmation number handy if you
+          need to get in touch.
+        </p>
+      </div>
+
+      <div class="card-body">
+        <div class="numbers">
+          <div class="number-tile">
+            <p class="xsmall muted">Order number</p>
+            <p class="number-value" data-testid="confirmation-order-number">{{ order.orderNumber }}</p>
+          </div>
+          <div class="number-tile">
+            <p class="xsmall muted">Confirmation number</p>
+            <p class="number-value" data-testid="confirmation-code">{{ order.confirmationNumber }}</p>
+          </div>
+        </div>
+
+        @if (emailFailed()) {
+          <div class="alert alert-warn mt-4" data-testid="email-failed">
+            <div>
+              <p class="strong mb-0">We couldn’t email your receipt</p>
+              <p class="small mb-0">
+                Your order is confirmed regardless — everything you need is on this page and in your order
+                history. Download the receipt below or ask us to resend it.
+              </p>
+            </div>
+          </div>
+        } @else {
+          <div class="alert alert-ok mt-4" data-testid="email-sent">
+            <p>A receipt is on its way to <strong>{{ order.customerEmail }}</strong>.</p>
+          </div>
+        }
+
+        <hr />
+
+        <dl class="kv">
+          <dt>Material</dt><dd>{{ order.materialName }}</dd>
+          <dt>Quantity</dt><dd>{{ order.quantity }} parts</dd>
+          <dt>Delivery</dt><dd>{{ order.shippingMethodName }}</dd>
+          <dt>Estimated delivery</dt><dd>{{ order.estimatedDelivery }}</dd>
+        </dl>
+
+        <div class="line mt-4"><span>Parts</span><span class="mono">{{ money(order.subtotalCents) }}</span></div>
+        <div class="line"><span>Shipping</span><span class="mono">{{ money(order.shippingCostCents) }}</span></div>
+        <div class="grand"><span>Paid</span><span class="mono">{{ money(order.totalCents) }}</span></div>
+
+        <h3 class="mt-5 small">Delivering to</h3>
+        <address class="small muted">
+          {{ order.shippingAddress.name }}<br />
+          {{ order.shippingAddress.line1 }}<br />
+          {{ order.shippingAddress.city }}, {{ order.shippingAddress.region }}
+          {{ order.shippingAddress.postcode }}
+        </address>
+
+        <h3 class="mt-5 small">Questions about this order?</h3>
+        <p class="small muted mb-0">
+          {{ branding.companyName() }} ·
+          <a [href]="'mailto:' + branding.business().supportEmail">{{ branding.business().supportEmail }}</a>
+          · {{ branding.business().phone }}
+        </p>
+      </div>
+
+      <div class="card-foot row">
+        <a [routerLink]="['/orders', order.id]" class="btn btn-secondary">Order details</a>
+        <a routerLink="/orders" class="btn btn-ghost">All orders</a>
+        <span class="spacer"></span>
+        <a routerLink="/quotes/new/upload" class="btn btn-primary" data-testid="confirmation-new-quote">
+          Quote another part
+        </a>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-ghost btn-sm preview-toggle" (click)="toggleEmailState()">
+      {{ emailFailed() ? 'Preview: receipt email sent' : 'Preview: receipt email failed' }}
+    </button>
+  }
+</section>

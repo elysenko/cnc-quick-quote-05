@@ -1,0 +1,81 @@
+<section class="page" data-testid="order-detail">
+  @if (order(); as order) {
+    <div class="page-head">
+      <div>
+        <a routerLink="/orders" class="small back-link">← All orders</a>
+        <h1 class="mt-2 mono">{{ order.orderNumber }}</h1>
+        <p class="sub">Placed {{ order.createdAt | date: 'd MMMM y' }} · {{ statusLabel() }}</p>
+      </div>
+      <div class="row">
+        <a [routerLink]="['/orders', order.id, 'confirmation']" class="btn btn-secondary">Confirmation</a>
+        <a href="#" (click)="$event.preventDefault()" class="btn btn-primary" data-testid="order-receipt">
+          Download receipt
+        </a>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="stack">
+        <div class="card card-pad">
+          <h3>Order numbers</h3>
+          <div class="numbers">
+            <div class="number-tile">
+              <p class="xsmall muted">Order number</p>
+              <p class="number-value" data-testid="order-number">{{ order.orderNumber }}</p>
+            </div>
+            <div class="number-tile">
+              <p class="xsmall muted">Confirmation number</p>
+              <p class="number-value" data-testid="confirmation-number">{{ order.confirmationNumber }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <h3>What you ordered</h3>
+          <dl class="kv">
+            <dt>Material</dt><dd>{{ order.materialName }}</dd>
+            <dt>Quantity</dt><dd>{{ order.quantity }} parts</dd>
+            <dt>Quote</dt><dd><a [routerLink]="['/quotes', order.quoteId]">View original quote</a></dd>
+          </dl>
+          <hr />
+          <div class="line"><span>Parts</span><span class="mono">{{ money(order.subtotalCents) }}</span></div>
+          <div class="line">
+            <span>Shipping — {{ order.shippingMethodName }}</span>
+            <span class="mono">{{ money(order.shippingCostCents) }}</span>
+          </div>
+          <div class="grand"><span>Paid</span><span class="mono">{{ money(order.totalCents) }}</span></div>
+        </div>
+      </div>
+
+      <aside class="stack">
+        <div class="card card-pad">
+          <h3>Delivery</h3>
+          <address class="small" data-testid="order-address">
+            {{ order.shippingAddress.name }}<br />
+            {{ order.shippingAddress.line1 }}<br />
+            @if (order.shippingAddress.line2) { {{ order.shippingAddress.line2 }}<br /> }
+            {{ order.shippingAddress.city }}, {{ order.shippingAddress.region }}
+            {{ order.shippingAddress.postcode }}<br />
+            {{ order.shippingAddress.country }}
+          </address>
+          <hr />
+          <dl class="kv">
+            <dt>Method</dt><dd>{{ order.shippingMethodName }}</dd>
+            <dt>Estimated delivery</dt><dd data-testid="estimated-delivery">{{ order.estimatedDelivery }}</dd>
+          </dl>
+        </div>
+
+        <div class="card card-pad">
+          <h3>{{ branding.companyName() }}</h3>
+          <address class="small muted" data-testid="company-contact">
+            @for (line of branding.addressLines(); track line) { {{ line }}<br /> }
+          </address>
+          <p class="small mb-0">
+            <a [href]="'mailto:' + branding.business().supportEmail">{{ branding.business().supportEmail }}</a><br />
+            {{ branding.business().phone }}
+          </p>
+        </div>
+      </aside>
+    </div>
+  }
+</section>

@@ -1,0 +1,79 @@
+/**
+ * CNC Quick Quote — design tokens.
+ * Single source of truth for colour, type, spacing and elevation.
+ * Brand values are overridden at runtime by BrandingService (admin branding config).
+ * Never write raw hex in component styles — always reference these vars.
+ */
+:root {
+  /* Brand — overridable by BrandingService */
+  --brand-primary: #1e4fd8;
+  --brand-primary-dark: #1839a5;
+  --brand-primary-light: #eaf0ff;
+  --brand-accent: #ea6a0c;
+  --brand-accent-light: #fff2e6;
+
+  /* Machine semantics: cut paths blue, bend lines orange */
+  --machine-cut: #1e4fd8;
+  --machine-bend: #ea6a0c;
+  --machine-bed: #10151f;
+  --machine-sheet: #1c2637;
+  --machine-grid-line: #26324a;
+
+  /* Neutrals */
+  --ink-900: #0d1220;
+  --ink-800: #161d2e;
+  --ink-700: #303b52;
+  --ink-600: #4a566e;
+  --ink-500: #6b7896;
+  --ink-400: #98a2b8;
+  --ink-300: #c8cfdd;
+  --ink-200: #e2e7f0;
+  --ink-100: #eef1f7;
+  --ink-050: #f6f8fc;
+  --surface: #ffffff;
+  --canvas: #f4f6fb;
+
+  /* Status */
+  --ok-600: #167a4d;
+  --ok-100: #e3f6ec;
+  --warn-600: #a76a05;
+  --warn-100: #fdf3dd;
+  --danger-600: #c02626;
+  --danger-100: #fdeaea;
+  --info-600: #1e4fd8;
+  --info-100: #eaf0ff;
+
+  /* Typography */
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.9375rem;
+
+  /* Spacing */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+
+  /* Shape + elevation */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(13, 18, 32, 0.06), 0 1px 3px rgba(13, 18, 32, 0.05);
+  --shadow: 0 4px 12px rgba(13, 18, 32, 0.08), 0 1px 3px rgba(13, 18, 32, 0.04);
+  --shadow-lg: 0 18px 40px rgba(13, 18, 32, 0.18);
+
+  /* Layout */
+  --header-h: 60px;
+  --tabbar-h: 60px;
+  --sidebar-w: 232px;
+  --content-max: 1180px;
+}

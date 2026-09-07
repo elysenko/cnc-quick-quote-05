@@ -1,0 +1,79 @@
+<div class="stack" data-testid="admin-settings">
+  @if (unconfigured().length > 0) {
+    <div class="alert alert-warn" role="status" data-testid="settings-banner">
+      <div>
+        <p class="strong mb-0">Some services aren’t connected yet</p>
+        <p class="small mb-0">{{ bannerText() }}</p>
+      </div>
+    </div>
+  } @else {
+    <div class="alert alert-ok" role="status" data-testid="settings-all-configured">
+      <p>All services and integrations are configured.</p>
+    </div>
+  }
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="mb-0">Provisioned services</h2>
+        <p class="xsmall muted mb-0">Supplied by the platform. Values here override the environment.</p>
+      </div>
+    </div>
+    <div class="card-body stack">
+      @for (entry of services(); track entry.key) {
+        <div class="setting" [attr.data-testid]="'setting-' + entry.key">
+          <div class="setting-head">
+            <div>
+              <p class="strong mb-0">{{ entry.label }}</p>
+              <p class="xsmall muted mb-0">{{ entry.description }}</p>
+            </div>
+            <span [class]="entry.configured ? 'badge badge-ok' : 'badge badge-danger'">
+              {{ entry.configured ? 'Configured' : 'Not configured' }}
+            </span>
+          </div>
+          <p class="xsmall mono muted mb-0">{{ entry.maskedValue || 'No value set' }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="mb-0">Integrations</h2>
+        <p class="xsmall muted mb-0">Enter a credential to activate the feature it powers.</p>
+      </div>
+    </div>
+    <div class="card-body stack">
+      @for (entry of integrations(); track entry.key) {
+        <div class="setting" [attr.data-testid]="'setting-' + entry.key">
+          <div class="setting-head">
+            <div>
+              <p class="strong mb-0">{{ entry.label }}</p>
+              <p class="xsmall muted mb-0">{{ entry.description }}</p>
+            </div>
+            <span [class]="entry.configured ? 'badge badge-ok' : 'badge badge-warn'">
+              {{ entry.configured ? 'Configured' : 'Needs credentials' }}
+            </span>
+          </div>
+
+          <p class="xsmall mono muted setting-key">{{ entry.key }}</p>
+
+          <div class="setting-form">
+            <input type="password" class="mono" [ngModel]="value(entry.key)" [name]="entry.key"
+                   (ngModelChange)="setValue(entry.key, $event)"
+                   [placeholder]="entry.maskedValue || 'Paste credential'"
+                   [attr.aria-label]="entry.label + ' credential'"
+                   [attr.data-testid]="'setting-input-' + entry.key" />
+            <button type="button" class="btn btn-primary" [disabled]="!value(entry.key).trim()"
+                    (click)="save(entry)" [attr.data-testid]="'setting-save-' + entry.key">Save</button>
+          </div>
+
+          @if (savedKey() === entry.key) {
+            <p class="xsmall saved-note mb-0">Saved. {{ entry.label }} is now active.</p>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

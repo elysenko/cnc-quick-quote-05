@@ -1,0 +1,106 @@
+<div class="card" data-testid="admin-materials">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Materials</h2>
+      <p class="xsmall muted mb-0">Sheet sizes drive nesting; the multiplier applies to sheet cost only.</p>
+    </div>
+    <a routerLink="/admin/materials" [queryParams]="{ modal: 'material-edit' }" class="btn btn-primary btn-sm"
+       (click)="syncDraft()" data-testid="material-add">+ Add material</a>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th scope="col">Material</th>
+          <th scope="col">Sheet size</th>
+          <th scope="col">Multiplier</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (material of materials(); track material.id) {
+          <tr [attr.data-testid]="'material-row-' + material.id">
+            <td>
+              <span class="name-cell">
+                <span class="strong">{{ material.name }}</span>
+                <span class="sub">{{ material.thicknessMm }} mm</span>
+              </span>
+            </td>
+            <td class="mono">{{ material.sheetWMm }} × {{ material.sheetHMm }} mm</td>
+            <td class="mono">×{{ material.costMultiplier.toFixed(2) }}</td>
+            <td>
+              <span [class]="material.isActive ? 'badge badge-ok' : 'badge'">
+                {{ material.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <a routerLink="/admin/materials" [queryParams]="{ modal: 'material-edit', id: material.id }"
+                   class="btn btn-secondary btn-sm" (click)="syncDraft()"
+                   [attr.data-testid]="'material-edit-' + material.id">Edit</a>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="toggleActive(material)"
+                        [attr.data-testid]="'material-toggle-' + material.id">
+                  {{ material.isActive ? 'Deactivate' : 'Reactivate' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modalOpen()) {
+  <div class="scrim" data-testid="material-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="material-modal-title">
+      <div class="modal-head">
+        <h2 id="material-modal-title">{{ modalTitle() }}</h2>
+        <a routerLink="/admin/materials" class="close-x" aria-label="Close">✕</a>
+      </div>
+      <div class="modal-body">
+        <div class="admin-form">
+          <div class="field full">
+            <label for="mat-name">Name</label>
+            <input id="mat-name" type="text" [ngModel]="draft().name" name="matName"
+                   (ngModelChange)="patch('name', $event)" placeholder="e.g. Mild Steel"
+                   data-testid="material-name-input" />
+          </div>
+          <div class="field">
+            <label for="mat-thickness">Thickness (mm)</label>
+            <input id="mat-thickness" type="number" step="0.1" min="0.1" [ngModel]="draft().thicknessMm"
+                   name="matThickness" (ngModelChange)="patch('thicknessMm', $event)" />
+          </div>
+          <div class="field">
+            <label for="mat-multiplier">Cost multiplier</label>
+            <input id="mat-multiplier" type="number" step="0.05" min="0" [ngModel]="draft().costMultiplier"
+                   name="matMultiplier" (ngModelChange)="patch('costMultiplier', $event)" />
+          </div>
+          <div class="field">
+            <label for="mat-w">Sheet width (mm)</label>
+            <input id="mat-w" type="number" min="1" [ngModel]="draft().sheetWMm" name="matW"
+                   (ngModelChange)="patch('sheetWMm', $event)" />
+          </div>
+          <div class="field">
+            <label for="mat-h">Sheet height (mm)</label>
+            <input id="mat-h" type="number" min="1" [ngModel]="draft().sheetHMm" name="matH"
+                   (ngModelChange)="patch('sheetHMm', $event)" />
+          </div>
+          <label class="switch full">
+            <input type="checkbox" [ngModel]="draft().isActive" name="matActive"
+                   (ngModelChange)="patch('isActive', $event)" />
+            Offer this material to customers
+          </label>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <a routerLink="/admin/materials" class="btn btn-secondary">Cancel</a>
+        <a routerLink="/admin/materials" class="btn btn-primary" (click)="save()" data-testid="material-save">
+          Save material
+        </a>
+      </div>
+    </div>
+  </div>
+}

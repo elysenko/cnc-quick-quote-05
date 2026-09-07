@@ -1,0 +1,87 @@
+<div class="stack" data-testid="admin-orders">
+  <div class="summary-row">
+    <div class="card card-pad summary-tile">
+      <p class="xsmall muted mb-0">Orders shown</p>
+      <p class="summary-value mono mb-0">{{ visible().length }}</p>
+    </div>
+    <div class="card card-pad summary-tile">
+      <p class="xsmall muted mb-0">Revenue (excl. cancelled)</p>
+      <p class="summary-value mono mb-0">{{ money(revenueCents()) }}</p>
+    </div>
+  </div>
+
+  <div class="filters" role="group" aria-label="Filter orders by status">
+    @for (filter of statusFilters; track filter.value) {
+      <a routerLink="/admin/orders" [queryParams]="{ status: filter.value, page: 1 }"
+         [class.on]="activeStatus() === filter.value"
+         [attr.data-testid]="'admin-orders-filter-' + filter.value">{{ filter.label }}</a>
+    }
+  </div>
+
+  <div class="card">
+    @if (visible().length === 0) {
+      <div class="state" data-testid="admin-orders-empty">
+        <span class="state-icon" aria-hidden="true">▤</span>
+        <h3>No orders with that status</h3>
+        <p class="muted mb-0">Try a different filter.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th scope="col">Order</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Job</th>
+              <th scope="col">Receipt</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of visible(); track order.id) {
+              <tr [attr.data-testid]="'admin-order-row-' + order.id">
+                <td>
+                  <span class="name-cell">
+                    <a class="mono strong" [routerLink]="['/orders', order.id]">{{ order.orderNumber }}</a>
+                    <span class="sub mono">{{ order.confirmationNumber }}</span>
+                  </span>
+                </td>
+                <td class="break">{{ order.customerEmail }}</td>
+                <td>
+                  <span class="name-cell">
+                    <span>{{ order.materialName }}</span>
+                    <span class="sub">×{{ order.quantity }} · {{ order.shippingMethodName }}</span>
+                  </span>
+                </td>
+                <td>
+                  @if (order.emailSentAt) {
+                    <span class="badge badge-ok">Sent</span>
+                  } @else {
+                    <span class="badge badge-warn">Not sent</span>
+                  }
+                </td>
+                <td><span [class]="badgeClass(order.status)">{{ label(order.status) }}</span></td>
+                <td class="right mono strong">{{ money(order.totalCents) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <nav class="pager" aria-label="Pagination">
+      @if (currentPage() > 1) {
+        <a routerLink="/admin/orders" [queryParams]="{ status: activeStatus(), page: currentPage() - 1 }"
+           class="btn btn-secondary btn-sm">← Previous</a>
+      }
+      <span class="small muted">Page {{ currentPage() }} of {{ totalPages() }}</span>
+      @if (currentPage() < totalPages()) {
+        <a routerLink="/admin/orders" [queryParams]="{ status: activeStatus(), page: currentPage() + 1 }"
+           class="btn btn-secondary btn-sm" data-testid="admin-orders-next-page">Next →</a>
+      }
+    </nav>
+  }
+</div>

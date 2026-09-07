@@ -1,0 +1,74 @@
+<section class="page page-narrow" data-testid="account">
+  <div class="page-head">
+    <div>
+      <h1>Account</h1>
+      <p class="sub">Signed in as {{ auth.currentUser()?.email }}</p>
+    </div>
+    <span class="badge badge-info">{{ auth.currentUser()?.role }}</span>
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Your details</h2></div>
+      <form class="card-body stack" (ngSubmit)="saveProfile()">
+        <div class="field">
+          <label for="account-name">Full name</label>
+          <input id="account-name" name="name" type="text" [(ngModel)]="name" data-testid="account-name" />
+        </div>
+        <div class="field">
+          <label for="account-email">Email address</label>
+          <input id="account-email" name="email" type="email" inputmode="email" [(ngModel)]="email"
+                 data-testid="account-email" />
+          <p class="hint">Order confirmations and receipts are sent here.</p>
+        </div>
+        @if (profileSaved()) {
+          <div class="alert alert-ok" role="status" data-testid="account-saved"><p>Your details were saved.</p></div>
+        }
+        <button type="submit" class="btn btn-primary" data-testid="account-save">Save changes</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Change password</h2></div>
+      <form class="card-body stack" (ngSubmit)="changePassword()">
+        <div class="field">
+          <label for="pw-current">Current password</label>
+          <input id="pw-current" name="current" type="password" autocomplete="current-password"
+                 [(ngModel)]="currentPassword" />
+        </div>
+        <div class="field">
+          <label for="pw-new">New password</label>
+          <input id="pw-new" name="new" type="password" autocomplete="new-password" [(ngModel)]="newPassword" />
+          <p class="hint">At least 8 characters.</p>
+        </div>
+        <div class="field">
+          <label for="pw-confirm">Confirm new password</label>
+          <input id="pw-confirm" name="confirm" type="password" autocomplete="new-password"
+                 [(ngModel)]="confirmPassword" />
+        </div>
+        @if (passwordError()) { <p class="field-error">{{ passwordError() }}</p> }
+        @if (passwordSaved()) {
+          <div class="alert alert-ok" role="status"><p>Password updated.</p></div>
+        }
+        <button type="submit" class="btn btn-secondary" data-testid="account-change-password">
+          Update password
+        </button>
+      </form>
+    </div>
+
+    <div class="card card-pad">
+      <h3>Need a hand?</h3>
+      <p class="small muted">
+        {{ branding.companyName() }} ·
+        <a [href]="'mailto:' + branding.business().supportEmail">{{ branding.business().supportEmail }}</a>
+        · {{ branding.business().phone }}
+      </p>
+      <div class="row">
+        <a routerLink="/orders" class="btn btn-secondary btn-sm">Order history</a>
+        <button type="button" class="btn btn-ghost btn-sm danger" (click)="signOut()" data-testid="account-signout">
+          Sign out
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

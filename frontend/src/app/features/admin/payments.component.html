@@ -1,0 +1,83 @@
+<div class="card" data-testid="admin-payments">
+  <div class="card-head">
+    <div>
+      <h2 class="mb-0">Payments</h2>
+      <p class="xsmall muted mb-0">Stripe Checkout keys. Secrets are stored encrypted and only ever shown masked.</p>
+    </div>
+    <span [class]="sandbox ? 'badge badge-warn' : 'badge badge-ok'">
+      {{ sandbox ? 'Test mode' : 'Live mode' }}
+    </span>
+  </div>
+
+  <div class="card-body">
+    @if (sandbox) {
+      <div class="alert alert-warn mb-4" data-testid="payments-sandbox-notice">
+        <p>
+          Test mode is on. Cards are not charged — use Stripe’s test numbers. Switch to live mode once your
+          live keys are in place.
+        </p>
+      </div>
+    }
+
+    <label class="switch mb-4">
+      <input type="checkbox" [(ngModel)]="sandbox" name="sandbox" (ngModelChange)="touch()"
+             data-testid="payments-sandbox-toggle" />
+      Use Stripe test (sandbox) keys
+    </label>
+
+    <div class="admin-form">
+      <div class="field full">
+        <label for="s-pk">Publishable key</label>
+        <input id="s-pk" type="text" class="mono" [(ngModel)]="publishableKey" name="pk" (ngModelChange)="touch()"
+               placeholder="pk_test_…" data-testid="payments-publishable-key" />
+      </div>
+      <div class="field full">
+        <label for="s-sk">Secret key</label>
+        <input id="s-sk" type="password" class="mono" [(ngModel)]="secretKey" name="sk" (ngModelChange)="touch()"
+               [placeholder]="storedSecret" data-testid="payments-secret-key" />
+        <p class="hint">Currently stored: <span class="mono">{{ storedSecret }}</span>. Leave blank to keep it.</p>
+      </div>
+      <div class="field full">
+        <label for="s-wh">Webhook signing secret</label>
+        <input id="s-wh" type="password" class="mono" [(ngModel)]="webhookSecret" name="wh" (ngModelChange)="touch()"
+               [placeholder]="storedWebhook" data-testid="payments-webhook-secret" />
+        <p class="hint">Currently stored: <span class="mono">{{ storedWebhook }}</span>.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+      <div>
+        <p class="strong mb-0">Register this webhook endpoint in Stripe</p>
+        <p class="small mono break-all mb-0">{{ webhookUrl }}</p>
+        <p class="xsmall mb-0">
+          Listen for <span class="mono">checkout.session.completed</span>. If the webhook never arrives the
+          payment page reconciles the session directly, so orders are never lost.
+        </p>
+      </div>
+    </div>
+
+    @switch (probe()) {
+      @case ('checking') {
+        <p class="loading mt-4" data-testid="payments-probing">
+          <span class="spinner"></span> Validating keys with Stripe…
+        </p>
+      }
+      @case ('valid') {
+        <div class="alert alert-ok mt-4" data-testid="payments-probe-ok">
+          <p>Keys verified with Stripe and saved.</p>
+        </div>
+      }
+      @case ('invalid') {
+        <div class="alert alert-danger mt-4" data-testid="payments-probe-fail">
+          <p>Stripe rejected those keys. Nothing was saved — check them and try again.</p>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="card-foot save-bar">
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-primary" [disabled]="!dirty() || probe() === 'checking'" (click)="save()"
+            data-testid="payments-save">Validate &amp; save</button>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-7) var(--sp-4); text-align: center;
+  background: var(--surface); border: 2px dashed var(--ink-300); border-radius: var(--radius);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.dropzone.dragging { border-color: var(--brand-primary); background: var(--brand-primary-light); }
+.drop-icon { font-size: 2rem; color: var(--ink-400); }
+.dropzone h2 { margin: 0; font-size: var(--fs-md); }
+.dropzone label.btn { margin-top: var(--sp-3); }
+.progress-wrap { width: min(320px, 100%); margin-top: var(--sp-4); }
+.progress-bar { height: 6px; border-radius: 999px; background: var(--ink-200); overflow: hidden; margin-bottom: var(--sp-2); }
+.progress-bar span { display: block; height: 100%; background: var(--brand-primary); transition: width 120ms linear; }
+.skipped { display: flex; flex-direction: column; gap: 2px; }
+.card-foot.row-between { gap: var(--sp-2); }
+@media (max-width: 520px) {
+  .card-foot.row-between .btn { width: 100%; }
+}

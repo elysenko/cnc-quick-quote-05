@@ -1,0 +1,21 @@
+<section class="page page-narrow" data-testid="checkout-shell">
+  <div class="page-head">
+    <div>
+      <a [routerLink]="['/quotes', quoteId()]" class="small back-link">← Back to quote</a>
+      <h1 class="mt-2">Checkout</h1>
+    </div>
+    <span class="badge badge-ok secure">🔒 Secure payment</span>
+  </div>
+
+  <ol class="checkout-steps">
+    @for (step of steps; track step.key; let i = $index) {
+      <li [class.active]="i === activeIndex()" [class.done]="i < activeIndex()">
+        <a [routerLink]="['/checkout', quoteId(), step.key]" [attr.data-testid]="'checkout-step-' + step.key">
+          <span class="dot" aria-hidden="true">{{ i < activeIndex() ? '✓' : i + 1 }}</span>{{ step.label }}
+        </a>
+      </li>
+    }
+  </ol>
+
+  <router-outlet />
+</section>

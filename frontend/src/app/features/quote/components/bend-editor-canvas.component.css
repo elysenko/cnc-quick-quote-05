@@ -1,0 +1,5 @@
+.bend-editor { display: flex; flex-direction: column; gap: var(--sp-2); }
+.bend-frame { position: relative; width: 100%; line-height: 0; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--ink-800); }
+canvas { display: block; touch-action: none; cursor: crosshair; width: 100%; }
+canvas:focus-visible { outline: 3px solid var(--brand-primary-light); outline-offset: -3px; }
+.bend-hint { color: var(--ink-500); margin: 0; }

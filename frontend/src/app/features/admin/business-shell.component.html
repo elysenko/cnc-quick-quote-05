@@ -1,0 +1,9 @@
+<div data-testid="admin-business">
+  <nav class="subnav" aria-label="Business settings">
+    @for (tab of tabs; track tab.path) {
+      <a [routerLink]="tab.path" routerLinkActive="active"
+         [attr.data-testid]="'business-tab-' + tab.label.toLowerCase()">{{ tab.label }}</a>
+    }
+  </nav>
+  <router-outlet />
+</div>
