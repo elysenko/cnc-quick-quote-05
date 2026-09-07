@@ -16,6 +16,11 @@ model User {
   role         Role     @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  drawings      Drawing[]
+  quotes        Quote[]
+  orders        Order[]
 }
 
 /// One value per role the stack contract declares (stacks/combos/enterprise.json auth.roles).
@@ -40,4 +45,213 @@ model ColossusAccount {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("colossus_accounts")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CNC Quick Quote domain
+// Money is stored as integer cents on Quote/Order. Admin-configured rates are
+// Decimal(12,4). Internal geometry unit is millimetres; cutFt = cutLengthMm / 304.8.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Opaque refresh token (SHA-256 of the value handed to the client), rotated on use.
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// An uploaded DXF plus the geometry derived from it. The stored object is never mutated.
+model Drawing {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename        String
+  /// MinIO object key: drawings/{userId}/{uuid}.dxf. Null when object storage is unconfigured.
+  objectKey       String?
+  sizeBytes       Int
+  /// Flattened polylines: { closed: boolean, points: [x, y][] }[]
+  geometryJson    Json
+  bboxWMm         Float
+  bboxHMm         Float
+  cutLengthMm     Float
+  entityCount     Int
+  skippedEntities Json
+  detectedUnits   String
+  createdAt       DateTime   @default(now())
+  bendLines       BendLine[]
+  quotes          Quote[]
+
+  @@index([userId])
+}
+
+model BendLine {
+  id        String   @id @default(uuid())
+  drawingId String
+  drawing   Drawing  @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  sx        Float
+  sy        Float
+  ex        Float
+  ey        Float
+  angleDeg  Float
+  /// "up" | "down"
+  direction String
+  createdAt DateTime @default(now())
+
+  @@index([drawingId])
+}
+
+/// Never hard-deleted — quotes reference the material they were priced against.
+model Material {
+  id             String   @id @default(uuid())
+  name           String
+  thicknessMm    Float
+  sheetWMm       Float
+  sheetHMm       Float
+  costMultiplier Decimal  @db.Decimal(12, 4)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  quotes         Quote[]
+
+  @@index([isActive])
+}
+
+/// Singleton (id = 1). Snapshotted onto every quote so later edits never restate a price.
+model PricingConfig {
+  id                Int      @id @default(1)
+  setupFee          Decimal  @db.Decimal(12, 4)
+  costPerLinearFoot Decimal  @db.Decimal(12, 4)
+  perSheetCost      Decimal  @db.Decimal(12, 4)
+  handlingFee       Decimal  @db.Decimal(12, 4)
+  costPerBend       Decimal  @db.Decimal(12, 4)
+  minimumOrder      Decimal  @db.Decimal(12, 4)
+  updatedAt         DateTime @updatedAt
+}
+
+/// Singleton (id = 1). Machine limits + upload policy + animation speed.
+model MachineConfig {
+  id                Int      @id @default(1)
+  minQuantity       Int
+  maxQuantity       Int
+  maxUploadBytes    Int
+  allowedExtensions String[]
+  sheetSpacingMm    Float
+  sheetMarginMm     Float
+  animationSpeed    Float
+  updatedAt         DateTime @updatedAt
+}
+
+/// Singleton (id = 1). Branding, contact block and Stripe credentials.
+/// Secret values are AES-256-GCM encrypted at rest and only ever returned masked.
+model BusinessConfig {
+  id                     Int      @id @default(1)
+  companyName            String
+  supportEmail           String
+  phone                  String
+  addressLine1           String
+  addressLine2           String
+  city                   String
+  region                 String
+  postcode               String
+  country                String
+  logoObjectKey          String?
+  primaryColor           String
+  accentColor            String
+  stripeSandbox          Boolean  @default(true)
+  stripePublishableKey   String
+  stripeSecretKeyEnc     String?
+  stripeWebhookSecretEnc String?
+  updatedAt              DateTime @updatedAt
+}
+
+model ShippingMethod {
+  id        String   @id @default(uuid())
+  name      String
+  /// "flat" | "per_sheet"
+  kind      String
+  rate      Decimal  @db.Decimal(12, 4)
+  estDays   Int
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@index([isActive])
+}
+
+model Quote {
+  id                  String   @id @default(uuid())
+  reference           String   @unique
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drawingId           String
+  drawing             Drawing  @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  materialId          String
+  material            Material @relation(fields: [materialId], references: [id])
+  quantity            Int
+  bendCount           Int
+  cutLengthMm         Float
+  sheetCount          Int
+  utilization         Float
+  nestingJson         Json
+  /// Frozen copy of PricingConfig + material multiplier at quote time.
+  pricingSnapshotJson Json
+  breakdownJson       Json
+  totalCents          Int
+  /// "draft" | "ordered" | "expired"
+  status              String   @default("draft")
+  createdAt           DateTime @default(now())
+  order               Order?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Order {
+  id                  String         @id @default(uuid())
+  quoteId             String         @unique
+  quote               Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderNumber         String         @unique
+  confirmationNumber  String         @unique
+  shippingMethodId    String?
+  shippingMethod      ShippingMethod? @relation(fields: [shippingMethodId], references: [id])
+  shippingMethodName  String
+  shippingCostCents   Int
+  shippingAddressJson Json
+  subtotalCents       Int
+  totalCents          Int
+  stripeSessionId     String?        @unique
+  stripePaymentIntent String?
+  /// "paid" | "in_production" | "shipped" | "cancelled"
+  status              String         @default("paid")
+  estimatedDelivery   DateTime
+  emailSentAt         DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+/// Webhook idempotency ledger — a Stripe event is acted on exactly once.
+model StripeEvent {
+  eventId     String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
+
+/// Admin-entered service/integration credentials. Read via resolveConfig(key),
+/// which prefers process.env and falls back to this table.
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }

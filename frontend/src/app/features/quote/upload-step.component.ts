@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DraftStore } from '../../core/draft-store';
-import { demoDrawing } from '../../core/demo-geometry';
+import { DrawingsApi } from '../../core/api/drawings.service';
+import { toAppError } from '../../core/errors';
 
 @Component({
   selector: 'app-upload-step',
@@ -12,6 +13,7 @@ import { demoDrawing } from '../../core/demo-geometry';
 })
 export class UploadStepComponent {
   private readonly router = inject(Router);
+  private readonly drawings = inject(DrawingsApi);
   readonly draft = inject(DraftStore);
 
   readonly dragging = signal(false);
@@ -24,6 +26,12 @@ export class UploadStepComponent {
 
   readonly maxMb = computed(() => Math.round(this.machine().maxUploadBytes / (1024 * 1024)));
   readonly extensions = computed(() => this.machine().allowedExtensions.join(', '));
+
+  constructor() {
+    // Limits are the administrator's, so the client-side pre-check below can
+    // only be as accurate as the config it has loaded.
+    void this.draft.loadReferenceData();
+  }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
@@ -48,7 +56,11 @@ export class UploadStepComponent {
     input.value = '';
   }
 
-  /** Client-side pre-check mirrors the machine config, so obvious rejects never hit the wire. */
+  /**
+   * Client-side pre-check mirrors the machine config so an obvious reject never
+   * costs an upload. The server re-checks in the same order — this is a
+   * courtesy, not the enforcement point.
+   */
   private accept(file: File): void {
     this.error.set(null);
     const cfg = this.machine();
@@ -63,29 +75,37 @@ export class UploadStepComponent {
       this.error.set(`“${file.name}” is ${(file.size / 1048576).toFixed(1)} MB — the limit is ${this.maxMb()} MB.`);
       return;
     }
-    this.simulateUpload(file.name);
+    this.upload(file);
   }
 
-  private simulateUpload(filename: string): void {
+  private upload(file: File): void {
     this.uploading.set(true);
     this.progress.set(0);
-    const timer = setInterval(() => {
-      const next = this.progress() + 20;
-      if (next >= 100) {
-        clearInterval(timer);
+
+    this.drawings.upload(file).subscribe({
+      next: (event) => {
+        if (event.kind === 'progress') {
+          this.progress.set(event.percent);
+          return;
+        }
         this.progress.set(100);
         this.uploading.set(false);
-        this.draft.drawing.set({ ...demoDrawing(), filename });
-        this.draft.persist();
-      } else {
-        this.progress.set(next);
-      }
-    }, 130);
+        this.draft.setDrawing(event.drawing);
+      },
+      error: (err: unknown) => {
+        this.uploading.set(false);
+        this.progress.set(0);
+        // The server's parser message is the useful one ("only contains SPLINE",
+        // "no cuttable geometry"), so it is surfaced verbatim.
+        this.error.set(toAppError(err).message);
+      },
+    });
   }
 
   replace(): void {
-    this.draft.drawing.set(null);
+    this.draft.reset();
     this.progress.set(0);
+    this.error.set(null);
   }
 
   next(): void {

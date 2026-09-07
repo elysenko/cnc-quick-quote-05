@@ -44,8 +44,14 @@ export class NewQuoteShellComponent {
   });
 
   constructor() {
-    // A deep link to any step past upload restores the persisted draft rather
-    // than dead-ending on an empty wizard.
-    this.draft.ensureDrawing();
+    // A deep link to any step past upload restores the persisted draft from the
+    // server rather than dead-ending on an empty wizard. When there is nothing
+    // to restore we send the customer to the upload step, which is the only
+    // step that works without a drawing.
+    void this.draft.restore().then((restored) => {
+      if (!restored && !this.url().startsWith('/quotes/new/upload')) {
+        void this.router.navigate(['/quotes/new/upload']);
+      }
+    });
   }
 }

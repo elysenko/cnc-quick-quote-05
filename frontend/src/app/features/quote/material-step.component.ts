@@ -22,6 +22,11 @@ export class MaterialStepComponent {
 
   readonly quantityInput = signal<number>(this.draft.quantity());
 
+  constructor() {
+    // Materials and the machine's quantity bounds come from the admin config.
+    void this.draft.restore().then(() => this.quantityInput.set(this.draft.quantity()));
+  }
+
   readonly quantityError = computed(() => {
     const qty = this.quantityInput();
     const cfg = this.machine();

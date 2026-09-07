@@ -3,32 +3,31 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AppUser, Role } from './models';
-import { readJson, removeLocal, writeJson } from './storage';
-
-const USER_KEY = 'user';
-const TOKEN_KEY = 'access_token';
+import { apiUrl } from './api-base';
+import { TokenStore } from './token-store';
+import { SessionRefresher, SessionPayload } from './session-refresher';
+import { toAppError } from './errors';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function isAppUser(value: unknown): value is AppUser {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v['id'] === 'string' &&
-    typeof v['email'] === 'string' &&
-    (v['role'] === 'USER' || v['role'] === 'MANAGER' || v['role'] === 'ADMIN')
-  );
-}
 
 export interface Credentials {
   email: string;
   password: string;
 }
 
+/**
+ * Owns the signed-in session.
+ *
+ * The access token lives in memory (TokenStore); the refresh token is an
+ * HttpOnly cookie, so a reload restores the session through a silent refresh
+ * rather than by reading a token out of storage.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly tokens = inject(TokenStore);
+  private readonly refresher = inject(SessionRefresher);
 
   private readonly user = signal<AppUser | null>(null);
 
@@ -48,39 +47,50 @@ export class AuthService {
    */
   readonly previewShortcut: string | null = COLOSSUS_PREVIEW ? 'Skip login — Demo Mode' : null;
 
+  /** Resolves once the initial session probe has settled, so guards can wait. */
+  readonly ready = signal(false);
+
   constructor() {
-    this.restore();
+    this.refresher.registerSessionLostHandler(() => {
+      this.user.set(null);
+      void this.router.navigate(['/login']);
+    });
+    void this.restore();
   }
 
   /**
-   * Restores the session defensively: anything unparseable or shape-invalid is
-   * cleared and we continue to a usable screen. Never throws.
+   * Restores the session defensively: a failed refresh simply means "signed
+   * out" and we continue to a usable screen. Never throws.
    */
-  private restore(): void {
-    const stored = readJson<AppUser>(USER_KEY, isAppUser);
-    if (stored) {
-      this.user.set(stored);
-      return;
-    }
-    removeLocal(TOKEN_KEY);
+  private async restore(): Promise<void> {
     if (COLOSSUS_PREVIEW) {
       // Preview sessions are treated as already signed in so every authenticated
       // route renders on a cold, direct load. `/login` stays reachable because
       // guestGuard does not redirect in preview.
-      this.seedSession('ADMIN');
+      this.seedPreviewSession('ADMIN');
+      this.ready.set(true);
+      return;
+    }
+    try {
+      await firstValueFrom(this.refresher.refresh());
+      await this.loadMe();
+    } catch {
+      this.user.set(null);
+      this.tokens.clear();
+    } finally {
+      this.ready.set(true);
     }
   }
 
-  private seedSession(role: Role): AppUser {
+  private seedPreviewSession(role: Role): AppUser {
     const user: AppUser = {
-      id: 'usr_demo_01',
-      email: 'demo.customer@example.com',
-      name: 'Dana Reyes',
+      id: 'preview-session',
+      email: 'preview@localhost',
+      name: 'Preview',
       role,
-      createdAt: '2026-02-14T09:12:00.000Z',
+      createdAt: new Date().toISOString(),
     };
     this.user.set(user);
-    writeJson(USER_KEY, user);
     return user;
   }
 
@@ -98,49 +108,79 @@ export class AuthService {
     if (COLOSSUS_PREVIEW) {
       // Resolved locally and synchronously: the preview host has no API server,
       // so any awaited network call would strand the reviewer on this screen.
-      this.seedSession('ADMIN');
+      this.seedPreviewSession('ADMIN');
       await this.router.navigate(['/quotes']);
       return;
     }
     const res = await firstValueFrom(
-      this.http.post<{ user: AppUser; accessToken: string }>('/api/auth/login', creds),
+      this.http.post<SessionPayload>(apiUrl('/auth/login'), creds, { withCredentials: true }),
     );
-    this.applySession(res.user, res.accessToken);
+    this.applySession(res);
     await this.router.navigate(['/quotes']);
   }
 
   async register(input: Credentials & { name: string }): Promise<void> {
     if (COLOSSUS_PREVIEW) {
-      const user = this.seedSession('ADMIN');
-      writeJson(USER_KEY, { ...user, name: input.name.trim() || user.name, email: input.email.trim() });
-      this.user.set({ ...user, name: input.name.trim() || user.name, email: input.email.trim() });
+      this.seedPreviewSession('ADMIN');
       await this.router.navigate(['/quotes']);
       return;
     }
     const res = await firstValueFrom(
-      this.http.post<{ user: AppUser; accessToken: string }>('/api/auth/register', input),
+      this.http.post<SessionPayload>(apiUrl('/auth/register'), input, { withCredentials: true }),
     );
-    this.applySession(res.user, res.accessToken);
+    this.applySession(res);
     await this.router.navigate(['/quotes']);
   }
 
   /** Preview-only: seeds the signed-in state with no credentials at all. */
   async previewSignIn(): Promise<void> {
     if (!COLOSSUS_PREVIEW) return;
-    this.seedSession('ADMIN');
+    this.seedPreviewSession('ADMIN');
     await this.router.navigate(['/quotes']);
   }
 
-  private applySession(user: AppUser, accessToken: string): void {
-    this.user.set(user);
-    writeJson(USER_KEY, user);
-    writeJson(TOKEN_KEY, accessToken);
+  async loadMe(): Promise<void> {
+    const res = await firstValueFrom(this.http.get<{ user: AppUser }>(apiUrl('/auth/me')));
+    this.user.set(res.user);
+  }
+
+  async updateProfile(name: string): Promise<void> {
+    const res = await firstValueFrom(
+      this.http.patch<{ user: AppUser }>(apiUrl('/auth/profile'), { name }),
+    );
+    this.user.set(res.user);
+  }
+
+  /** Throws an AppError whose message the account screen renders inline. */
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.patch<void>(apiUrl('/auth/password'), { currentPassword, newPassword }),
+      );
+    } catch (error) {
+      throw toAppError(error);
+    }
+  }
+
+  private applySession(session: SessionPayload): void {
+    this.tokens.set(session.accessToken);
+    this.user.set(session.user);
   }
 
   async logout(): Promise<void> {
+    if (!COLOSSUS_PREVIEW) {
+      // A network failure must not trap the user in a signed-in shell, so the
+      // local state is cleared regardless of what the server says.
+      try {
+        await firstValueFrom(
+          this.http.post<void>(apiUrl('/auth/logout'), {}, { withCredentials: true }),
+        );
+      } catch {
+        /* already effectively signed out */
+      }
+    }
     this.user.set(null);
-    removeLocal(USER_KEY);
-    removeLocal(TOKEN_KEY);
+    this.tokens.clear();
     await this.router.navigate(['/login']);
   }
 }

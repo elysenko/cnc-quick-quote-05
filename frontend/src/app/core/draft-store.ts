@@ -1,8 +1,10 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { BendLine, Drawing, MachineConfig, Material, PricingConfig } from './models';
-import { demoDrawing } from './demo-geometry';
 import { nest, price } from './estimate';
 import { readJson, removeSession, writeJson } from './storage';
+import { CatalogApi } from './api/catalog.service';
+import { DrawingsApi } from './api/drawings.service';
 
 interface PersistedDraft {
   drawingId: string;
@@ -19,49 +21,64 @@ function isPersistedDraft(v: unknown): v is PersistedDraft {
 const DRAFT_KEY = 'quote-draft';
 
 /**
- * Wizard state for `/quotes/new/*`. Persisted to sessionStorage keyed by drawing
- * id so a deep link to any step restores the draft rather than dead-ending.
+ * Neutral placeholders held only until the first API response lands. Real
+ * limits and rates come from the administrator's MachineConfig/PricingConfig.
+ */
+const MACHINE_FALLBACK: MachineConfig = {
+  minQuantity: 1,
+  maxQuantity: 500,
+  maxUploadBytes: 10 * 1024 * 1024,
+  allowedExtensions: ['.dxf'],
+  sheetSpacingMm: 6,
+  sheetMarginMm: 12,
+  animationSpeed: 320,
+};
+
+const PRICING_FALLBACK: PricingConfig = {
+  setupFee: 0,
+  costPerLinearFoot: 0,
+  perSheetCost: 0,
+  handlingFee: 0,
+  costPerBend: 0,
+  minimumOrder: 0,
+};
+
+/**
+ * Wizard state for `/quotes/new/*`.
+ *
+ * The draft (drawing id, material, quantity) is persisted to sessionStorage so
+ * a deep link to any step restores rather than dead-ending; the drawing itself
+ * is re-fetched from the server, never reconstructed locally.
+ *
+ * The nesting and price shown here are a PREVIEW computed with the same
+ * formulas the server uses. The binding number is always the one returned by
+ * POST /api/quotes, which stores its own pricing snapshot.
  */
 @Injectable({ providedIn: 'root' })
 export class DraftStore {
-  readonly drawing = signal<Drawing | null>(demoDrawing());
+  private readonly catalog = inject(CatalogApi);
+  private readonly drawingsApi = inject(DrawingsApi);
 
-  readonly bends = signal<BendLine[]>([
-    { id: 'bnd_01', drawingId: 'dwg_8f31c2', sx: 0, sy: 40, ex: 180, ey: 40, angleDeg: 90, direction: 'up' },
-    { id: 'bnd_02', drawingId: 'dwg_8f31c2', sx: 0, sy: 96, ex: 180, ey: 96, angleDeg: 45, direction: 'down' },
-  ]);
+  readonly drawing = signal<Drawing | null>(null);
+  readonly bends = signal<BendLine[]>([]);
+  readonly materials = signal<Material[]>([]);
+  readonly machine = signal<MachineConfig>(MACHINE_FALLBACK);
+  readonly pricing = signal<PricingConfig>(PRICING_FALLBACK);
 
-  readonly materials = signal<Material[]>([
-    { id: 'mat_ms16', name: 'Mild Steel', thicknessMm: 1.6, sheetWMm: 2500, sheetHMm: 1250, costMultiplier: 1.0, isActive: true },
-    { id: 'mat_ms30', name: 'Mild Steel', thicknessMm: 3.0, sheetWMm: 2500, sheetHMm: 1250, costMultiplier: 1.45, isActive: true },
-    { id: 'mat_ss20', name: 'Stainless 304', thicknessMm: 2.0, sheetWMm: 2000, sheetHMm: 1000, costMultiplier: 2.35, isActive: true },
-    { id: 'mat_al30', name: 'Aluminium 5052', thicknessMm: 3.0, sheetWMm: 2500, sheetHMm: 1250, costMultiplier: 1.85, isActive: true },
-    { id: 'mat_bz15', name: 'Brass C260', thicknessMm: 1.5, sheetWMm: 1200, sheetHMm: 600, costMultiplier: 3.1, isActive: true },
-  ]);
+  readonly materialId = signal<string>('');
+  readonly quantity = signal<number>(1);
 
-  readonly machine = signal<MachineConfig>({
-    minQuantity: 1,
-    maxQuantity: 500,
-    maxUploadBytes: 10 * 1024 * 1024,
-    allowedExtensions: ['.dxf'],
-    sheetSpacingMm: 6,
-    sheetMarginMm: 12,
-    animationSpeed: 320,
-  });
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
 
-  readonly pricing = signal<PricingConfig>({
-    setupFee: 45,
-    costPerLinearFoot: 1.85,
-    perSheetCost: 62,
-    handlingFee: 12.5,
-    costPerBend: 3.25,
-    minimumOrder: 95,
-  });
-
-  readonly materialId = signal<string>('mat_ms16');
-  readonly quantity = signal<number>(24);
-
-  readonly material = computed(() => this.materials().find((m) => m.id === this.materialId()) ?? this.materials()[0]);
+  /**
+   * Non-null once materials have loaded, because the material step's template
+   * dereferences `material().sheetWMm` unguarded. Null only in the brief window
+   * before the first response, which the template guards with `@if (drawing())`.
+   */
+  readonly material = computed(
+    () => this.materials().find((m) => m.id === this.materialId()) ?? this.materials()[0],
+  );
 
   readonly hasDrawing = computed(() => this.drawing() !== null);
 
@@ -98,17 +115,81 @@ export class DraftStore {
   /** True once the quote inputs changed after a price was shown. */
   readonly stale = signal(false);
 
-  constructor() {
-    this.restore();
+  private referenceData: Promise<void> | null = null;
+
+  /** Loads materials, machine limits and rates once per session. */
+  loadReferenceData(): Promise<void> {
+    if (this.referenceData) return this.referenceData;
+    this.referenceData = (async () => {
+      this.loading.set(true);
+      try {
+        const [materials, machine, pricing] = await Promise.all([
+          firstValueFrom(this.catalog.materials()),
+          firstValueFrom(this.catalog.machineConfig()),
+          firstValueFrom(this.catalog.pricingConfig()),
+        ]);
+        this.materials.set(materials);
+        this.machine.set(machine);
+        this.pricing.set(pricing);
+        if (!this.materialId() && materials.length > 0) this.materialId.set(materials[0].id);
+        if (this.quantity() < machine.minQuantity) this.quantity.set(machine.minQuantity);
+        this.error.set(null);
+      } catch {
+        this.error.set('We could not load the material catalogue. Refresh to try again.');
+        // Allow a later retry rather than caching the failure forever.
+        this.referenceData = null;
+      } finally {
+        this.loading.set(false);
+      }
+    })();
+    return this.referenceData;
   }
 
-  private restore(): void {
+  /**
+   * Restores a draft from sessionStorage — re-fetching the drawing and its bend
+   * lines from the server so a deep link to /quotes/new/bends works on a cold
+   * load. Resolves false when there is nothing to restore.
+   */
+  async restore(): Promise<boolean> {
+    await this.loadReferenceData();
+    if (this.drawing()) return true;
+
     const saved = readJson<PersistedDraft>(DRAFT_KEY, isPersistedDraft, 'session');
-    if (!saved) return;
+    if (!saved) return false;
+
     if (this.materials().some((m) => m.id === saved.materialId)) {
       this.materialId.set(saved.materialId);
     }
     if (saved.quantity > 0) this.quantity.set(saved.quantity);
+
+    try {
+      const [drawing, bends] = await Promise.all([
+        firstValueFrom(this.drawingsApi.get(saved.drawingId)),
+        firstValueFrom(this.drawingsApi.listBends(saved.drawingId)),
+      ]);
+      this.drawing.set(drawing);
+      this.bends.set(bends);
+      return true;
+    } catch {
+      // The drawing is gone (deleted, or another account's) — clear the stale
+      // draft so the wizard sends the customer back to the upload step.
+      removeSession(DRAFT_KEY);
+      return false;
+    }
+  }
+
+  /** Adopts a freshly uploaded drawing as the current draft. */
+  setDrawing(drawing: Drawing): void {
+    this.drawing.set(drawing);
+    this.bends.set([]);
+    this.stale.set(true);
+    this.persist();
+  }
+
+  async reloadBends(): Promise<void> {
+    const dwg = this.drawing();
+    if (!dwg) return;
+    this.bends.set(await firstValueFrom(this.drawingsApi.listBends(dwg.id)));
   }
 
   persist(): void {
@@ -132,6 +213,8 @@ export class DraftStore {
     this.persist();
   }
 
+  // Bend mutations are persisted server-side by the bends step; these keep the
+  // local signal in step so the canvas and price preview update immediately.
   addBend(bend: BendLine): void {
     this.bends.update((list) => [...list, bend]);
     this.stale.set(true);
@@ -152,10 +235,5 @@ export class DraftStore {
     this.bends.set([]);
     this.stale.set(false);
     removeSession(DRAFT_KEY);
-  }
-
-  /** Restores the demo drawing — used when a deep link lands mid-wizard. */
-  ensureDrawing(): void {
-    if (!this.drawing()) this.drawing.set(demoDrawing());
   }
 }
