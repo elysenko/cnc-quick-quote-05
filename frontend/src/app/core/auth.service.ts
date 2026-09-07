@@ -61,6 +61,11 @@ export class AuthService {
   /**
    * Restores the session defensively: a failed refresh simply means "signed
    * out" and we continue to a usable screen. Never throws.
+   *
+   * A visitor who has never logged in on this browser carries no session
+   * hint, so the silent refresh is skipped outright rather than firing a
+   * doomed /api/auth/refresh (and logging a 401) on every cold load of the
+   * public front page.
    */
   private async restore(): Promise<void> {
     if (COLOSSUS_PREVIEW) {
@@ -68,6 +73,10 @@ export class AuthService {
       // route renders on a cold, direct load. `/login` stays reachable because
       // guestGuard does not redirect in preview.
       this.seedPreviewSession('ADMIN');
+      this.ready.set(true);
+      return;
+    }
+    if (!this.tokens.hasSessionHint()) {
       this.ready.set(true);
       return;
     }
@@ -164,6 +173,7 @@ export class AuthService {
 
   private applySession(session: SessionPayload): void {
     this.tokens.set(session.accessToken);
+    this.tokens.markSessionHint();
     this.user.set(session.user);
   }
 
@@ -181,6 +191,7 @@ export class AuthService {
     }
     this.user.set(null);
     this.tokens.clear();
+    this.tokens.clearSessionHint();
     await this.router.navigate(['/login']);
   }
 }

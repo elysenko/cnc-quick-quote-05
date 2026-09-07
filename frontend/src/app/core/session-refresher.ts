@@ -37,10 +37,14 @@ export class SessionRefresher {
     this.inFlight = this.http
       .post<SessionPayload>(apiUrl('/auth/refresh'), {}, { withCredentials: true })
       .pipe(
-        tap((session) => this.tokens.set(session.accessToken)),
+        tap((session) => {
+          this.tokens.set(session.accessToken);
+          this.tokens.markSessionHint();
+        }),
         map((session) => session.accessToken),
         catchError((error: unknown) => {
           this.tokens.clear();
+          this.tokens.clearSessionHint();
           this.onSessionLost?.();
           return throwError(() => error);
         }),
